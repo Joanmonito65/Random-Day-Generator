@@ -837,7 +837,7 @@
         }
 
         .versionList {
-            max-height: 250px;
+            max-height: 300px;
             overflow-y: auto;
             padding-right: 3px;
         }
@@ -865,6 +865,17 @@
             color: #ccc;
             font-size: 11px;
             font-weight: bold;
+            min-width: 0;
+        }
+
+        .versionName {
+            color: #eee;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .versionDate {
@@ -884,6 +895,42 @@
             color: #aaa;
             font-size: 10px;
             margin-top: 3px;
+        }
+
+        .versionActions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .versionActionButton {
+            margin: 0;
+            padding: 6px 9px;
+            border-radius: 7px;
+            background: #292929;
+            color: #bbb;
+            border: 1px solid #3d3d3d;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .versionActionButton:hover {
+            background: #373737;
+            color: white;
+        }
+
+        .versionActionButton.load {
+            color: #ddd;
+        }
+
+        .versionActionButton.delete {
+            background: #2b2020;
+            border-color: #4d3535;
+        }
+
+        .versionActionButton.delete:hover {
+            background: #3b2525;
         }
 
         .noVersions {
@@ -1266,6 +1313,10 @@
 
             .logTime {
                 font-size: 8px;
+            }
+
+            .versionActions {
+                flex-wrap: wrap;
             }
         }
 
@@ -1774,7 +1825,9 @@
                 !
             </div>
 
-            <h3>Delete saves?</h3>
+            <h3 id="warningTitle">
+                Delete saves?
+            </h3>
 
             <p id="warningText">
                 This will permanently delete the selected saves.
@@ -1835,6 +1888,11 @@
 
         let nameModalMode = null;
         let nameModalSaveId = null;
+        let nameModalVersionId = null;
+
+        let pendingDeleteType = null;
+        let pendingDeleteSaveId = null;
+        let pendingDeleteVersionId = null;
 
         const monthNames = [
             "January",
@@ -1981,6 +2039,20 @@
             );
         }
 
+        function getDefaultVersionName(
+            versionNumber,
+            timestamp
+        ) {
+            return (
+                "Version " +
+                versionNumber +
+                " — " +
+                formatSaveDate(
+                    timestamp
+                )
+            );
+        }
+
         function getSaveVersionState(
             source
         ) {
@@ -2119,49 +2191,104 @@
                                 "boolean"
                     )
                     .map(
-                        save => ({
-                            ...save,
-
-                            name:
-                                typeof save.name ===
-                                "string"
-                                    ? save.name
-                                    : "Save — " +
-                                      formatSaveDate(
-                                          save.timestamp
-                                      ),
-
-                            pinned:
-                                Boolean(
-                                    save.pinned
-                                ),
-
-                            currentDate:
-                                typeof save.currentDate ===
-                                "string"
-                                    ? save.currentDate
-                                    : "",
-
-                            logs:
-                                Array.isArray(
-                                    save.logs
-                                )
-                                    ? save.logs
-                                    : [],
-
-                            updatedAt:
-                                typeof save.updatedAt ===
-                                "number"
-                                    ? save.updatedAt
-                                    : save.timestamp,
-
-                            versions:
+                        save => {
+                            let versions =
                                 Array.isArray(
                                     save.versions
                                 )
                                     ? save.versions
-                                    : []
-                        })
+                                    : [];
+
+                            versions =
+                                versions.map(
+                                    (
+                                        version,
+                                        index
+                                    ) => ({
+                                        ...version,
+
+                                        id:
+                                            typeof version.id ===
+                                            "string"
+                                                ? version.id
+                                                : createId(),
+
+                                        timestamp:
+                                            typeof version.timestamp ===
+                                            "number"
+                                                ? version.timestamp
+                                                : (
+                                                      save.timestamp ||
+                                                      Date.now()
+                                                  ),
+
+                                        name:
+                                            typeof version.name ===
+                                            "string"
+                                                ? version.name
+                                                : getDefaultVersionName(
+                                                      index +
+                                                          1,
+                                                      typeof version.timestamp ===
+                                                      "number"
+                                                          ? version.timestamp
+                                                          : Date.now()
+                                                  ),
+
+                                        logs:
+                                            Array.isArray(
+                                                version.logs
+                                            )
+                                                ? version.logs
+                                                : [],
+
+                                        reason:
+                                            typeof version.reason ===
+                                            "string"
+                                                ? version.reason
+                                                : "Saved version"
+                                    })
+                                );
+
+                            return {
+                                ...save,
+
+                                name:
+                                    typeof save.name ===
+                                    "string"
+                                        ? save.name
+                                        : "Save — " +
+                                          formatSaveDate(
+                                              save.timestamp
+                                          ),
+
+                                pinned:
+                                    Boolean(
+                                        save.pinned
+                                    ),
+
+                                currentDate:
+                                    typeof save.currentDate ===
+                                    "string"
+                                        ? save.currentDate
+                                        : "",
+
+                                logs:
+                                    Array.isArray(
+                                        save.logs
+                                    )
+                                        ? save.logs
+                                        : [],
+
+                                updatedAt:
+                                    typeof save.updatedAt ===
+                                    "number"
+                                        ? save.updatedAt
+                                        : save.timestamp,
+
+                                versions
+                            };
+                        }
                     );
 
             saveHistory();
@@ -2299,38 +2426,51 @@
             );
         }
 
-        /*
-         * Put the current state of a save into
-         * the save's version history.
-         */
+        function getVersionSignature(
+            version
+        ) {
+            return getComparableSignature(
+                version
+            );
+        }
+
+        function versionAlreadyExists(
+            save,
+            state
+        ) {
+            const signature =
+                getComparableSignature(
+                    state
+                );
+
+            return (
+                save.versions || []
+            ).some(
+                version =>
+                    getVersionSignature(
+                        version
+                    ) ===
+                    signature
+            );
+        }
+
         function archiveSaveVersion(
             save,
-            reason
+            reason,
+            customName = null
         ) {
             const previousState =
                 getSaveVersionState(
                     save
                 );
 
-            const previousSignature =
-                getComparableSignature(
-                    previousState
-                );
-
-            const lastVersion =
-                save.versions?.[
-                    save.versions.length -
-                        1
-                ];
-
             if (
-                lastVersion &&
-                getComparableSignature(
-                    lastVersion
-                ) ===
-                    previousSignature
+                versionAlreadyExists(
+                    save,
+                    previousState
+                )
             ) {
-                return;
+                return null;
             }
 
             if (
@@ -2341,30 +2481,53 @@
                 save.versions = [];
             }
 
-            save.versions.push({
+            const versionNumber =
+                save.versions.length +
+                1;
+
+            const version = {
                 id: createId(),
+
                 timestamp:
                     previousState.timestamp,
+
+                name:
+                    customName ||
+                    getDefaultVersionName(
+                        versionNumber,
+                        previousState.timestamp
+                    ),
+
                 clickCount:
                     previousState.clickCount,
+
                 currentDate:
                     previousState.currentDate,
+
                 dateCounts:
                     previousState.dateCounts,
+
                 dateHistory:
                     previousState.dateHistory,
+
                 feb29SameChance:
                     previousState.feb29SameChance,
+
                 logs:
                     previousState.logs,
-                reason
-            });
+
+                reason:
+                    reason ||
+                    "Saved version"
+            };
+
+            save.versions.push(
+                version
+            );
+
+            return version;
         }
 
-        /*
-         * Update the currently opened save.
-         * The previous state becomes an old version.
-         */
         function updateCurrentSave(
             reason
         ) {
@@ -2409,12 +2572,6 @@
                 return save;
             }
 
-            /*
-             * Don't create a duplicate save.
-             * If another save already represents the
-             * exact new state, switch the current save
-             * to that existing save instead.
-             */
             const duplicate =
                 findDuplicateSave(
                     currentSignature,
@@ -2475,10 +2632,6 @@
             return save;
         }
 
-        /*
-         * Save a new run when there isn't already
-         * a save attached to the current run.
-         */
         function createSaveFromCurrentRun(
             name
         ) {
@@ -2516,14 +2669,19 @@
 
             const newSave = {
                 id: createId(),
-                timestamp: Date.now(),
-                updatedAt: Date.now(),
+
+                timestamp:
+                    Date.now(),
+
+                updatedAt:
+                    Date.now(),
 
                 name:
                     name ||
                     getDefaultSaveName(),
 
-                pinned: false,
+                pinned:
+                    false,
 
                 clickCount:
                     state.clickCount,
@@ -2568,11 +2726,6 @@
             return newSave;
         }
 
-        /*
-         * Ensures the current run is stored.
-         * Existing save => update it.
-         * New run => create a save.
-         */
         function ensureCurrentRunSaved(
             reason
         ) {
@@ -3955,6 +4108,12 @@
                     meta.className =
                         "saveMeta";
 
+                    const versionCount =
+                        (
+                            save.versions?.length ||
+                            0
+                        );
+
                     meta.textContent =
                         save.clickCount +
                         " clicks • updated " +
@@ -3963,13 +4122,10 @@
                                 save.timestamp
                         ) +
                         " • " +
-                        (
-                            save.versions?.length ||
-                            0
-                        ) +
+                        versionCount +
                         " old " +
                         (
-                            save.versions?.length ===
+                            versionCount ===
                             1
                                 ? "version"
                                 : "versions"
@@ -4035,7 +4191,7 @@
                             event.stopPropagation();
 
                             openNameModal(
-                                "rename",
+                                "renameSave",
                                 save.id
                             );
                         }
@@ -4297,6 +4453,23 @@
                                     versionCard.className =
                                         "versionCard";
 
+                                    const versionNumber =
+                                        versions.length -
+                                        reverseIndex;
+
+                                    const versionName =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionName.className =
+                                        "versionName";
+
+                                    versionName.textContent =
+                                        version.name ||
+                                        "Version " +
+                                            versionNumber;
+
                                     const versionTop =
                                         document.createElement(
                                             "div"
@@ -4305,20 +4478,17 @@
                                     versionTop.className =
                                         "versionTop";
 
-                                    const versionNumber =
+                                    const versionNumberElement =
                                         document.createElement(
                                             "div"
                                         );
 
-                                    versionNumber.className =
+                                    versionNumberElement.className =
                                         "versionNumber";
 
-                                    versionNumber.textContent =
+                                    versionNumberElement.textContent =
                                         "Version " +
-                                        (
-                                            versions.length -
-                                            reverseIndex
-                                        );
+                                        versionNumber;
 
                                     const versionDate =
                                         document.createElement(
@@ -4334,7 +4504,7 @@
                                         );
 
                                     versionTop.appendChild(
-                                        versionNumber
+                                        versionNumberElement
                                     );
 
                                     versionTop.appendChild(
@@ -4377,6 +4547,109 @@
                                         version.reason ||
                                         "Saved version";
 
+                                    const versionActions =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionActions.className =
+                                        "versionActions";
+
+                                    const loadVersionButton =
+                                        document.createElement(
+                                            "button"
+                                        );
+
+                                    loadVersionButton.className =
+                                        "versionActionButton load";
+
+                                    loadVersionButton.textContent =
+                                        "Load";
+
+                                    loadVersionButton.title =
+                                        "Load this old version";
+
+                                    loadVersionButton.addEventListener(
+                                        "click",
+                                        event => {
+                                            event.stopPropagation();
+
+                                            loadVersion(
+                                                save.id,
+                                                version.id
+                                            );
+                                        }
+                                    );
+
+                                    const renameVersionButton =
+                                        document.createElement(
+                                            "button"
+                                        );
+
+                                    renameVersionButton.className =
+                                        "versionActionButton";
+
+                                    renameVersionButton.textContent =
+                                        "✎";
+
+                                    renameVersionButton.title =
+                                        "Rename version";
+
+                                    renameVersionButton.addEventListener(
+                                        "click",
+                                        event => {
+                                            event.stopPropagation();
+
+                                            openNameModal(
+                                                "renameVersion",
+                                                save.id,
+                                                version.id
+                                            );
+                                        }
+                                    );
+
+                                    const deleteVersionButton =
+                                        document.createElement(
+                                            "button"
+                                        );
+
+                                    deleteVersionButton.className =
+                                        "versionActionButton delete";
+
+                                    deleteVersionButton.textContent =
+                                        "×";
+
+                                    deleteVersionButton.title =
+                                        "Delete version";
+
+                                    deleteVersionButton.addEventListener(
+                                        "click",
+                                        event => {
+                                            event.stopPropagation();
+
+                                            openVersionDeleteWarning(
+                                                save.id,
+                                                version.id
+                                            );
+                                        }
+                                    );
+
+                                    versionActions.appendChild(
+                                        loadVersionButton
+                                    );
+
+                                    versionActions.appendChild(
+                                        renameVersionButton
+                                    );
+
+                                    versionActions.appendChild(
+                                        deleteVersionButton
+                                    );
+
+                                    versionCard.appendChild(
+                                        versionName
+                                    );
+
                                     versionCard.appendChild(
                                         versionTop
                                     );
@@ -4387,6 +4660,10 @@
 
                                     versionCard.appendChild(
                                         versionReason
+                                    );
+
+                                    versionCard.appendChild(
+                                        versionActions
                                     );
 
                                     versionList.appendChild(
@@ -4504,10 +4781,6 @@
                 return;
             }
 
-            /*
-             * Before switching away from the current run,
-             * save whatever state the user was currently on.
-             */
             if (
                 clickCount > 0 &&
                 currentSaveId !==
@@ -4518,11 +4791,6 @@
                 );
             }
 
-            /*
-             * Refresh the target reference because
-             * saving the current run could have sorted
-             * or changed the history array.
-             */
             const save =
                 historySaves.find(
                     item =>
@@ -4611,6 +4879,219 @@
             renderHistory();
 
             closeProbability();
+        }
+
+        /*
+         * Load an old version into its parent save.
+         *
+         * The current state is preserved as an old version
+         * before the selected version becomes the current state.
+         */
+        function loadVersion(
+            saveId,
+            versionId
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            if (
+                !save
+            ) {
+                return;
+            }
+
+            const version =
+                (
+                    save.versions ||
+                    []
+                ).find(
+                    item =>
+                        item.id ===
+                        versionId
+                );
+
+            if (
+                !version
+            ) {
+                return;
+            }
+
+            /*
+             * If another save/run is currently open,
+             * preserve it before changing saves.
+             */
+            if (
+                clickCount > 0 &&
+                currentSaveId !==
+                    saveId
+            ) {
+                ensureCurrentRunSaved(
+                    "Switched before loading an old version"
+                );
+            }
+
+            const refreshedSave =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            if (
+                !refreshedSave
+            ) {
+                return;
+            }
+
+            /*
+             * Preserve the current main state before
+             * replacing it with the old version.
+             */
+            const currentMainState =
+                getSaveVersionState(
+                    refreshedSave
+                );
+
+            const currentMainSignature =
+                getComparableSignature(
+                    currentMainState
+                );
+
+            const loadedVersionSignature =
+                getVersionSignature(
+                    version
+                );
+
+            if (
+                currentMainSignature !==
+                loadedVersionSignature
+            ) {
+                archiveSaveVersion(
+                    refreshedSave,
+                    "Before loading an old version"
+                );
+            }
+
+            /*
+             * Make the selected old version the current
+             * state of the save.
+             */
+            clickCount =
+                version.clickCount;
+
+            currentDate =
+                version.currentDate ||
+                "";
+
+            currentSaveId =
+                refreshedSave.id;
+
+            currentSaveName =
+                refreshedSave.name ||
+                "Unnamed Save";
+
+            sessionLogs =
+                cloneObject(
+                    version.logs ||
+                        []
+                );
+
+            for (
+                const date in dateCounts
+            ) {
+                delete dateCounts[
+                    date
+                ];
+            }
+
+            for (
+                const date in dateHistory
+            ) {
+                delete dateHistory[
+                    date
+                ];
+            }
+
+            Object.assign(
+                dateCounts,
+                cloneObject(
+                    version.dateCounts ||
+                        {}
+                )
+            );
+
+            Object.assign(
+                dateHistory,
+                cloneObject(
+                    version.dateHistory ||
+                        {}
+                )
+            );
+
+            feb29SameChance =
+                Boolean(
+                    version.feb29SameChance
+                );
+
+            refreshedSave.clickCount =
+                version.clickCount;
+
+            refreshedSave.currentDate =
+                version.currentDate ||
+                "";
+
+            refreshedSave.dateCounts =
+                cloneObject(
+                    version.dateCounts ||
+                        {}
+                );
+
+            refreshedSave.dateHistory =
+                cloneObject(
+                    version.dateHistory ||
+                        {}
+                );
+
+            refreshedSave.feb29SameChance =
+                Boolean(
+                    version.feb29SameChance
+                );
+
+            refreshedSave.logs =
+                cloneObject(
+                    version.logs ||
+                        []
+                );
+
+            refreshedSave.updatedAt =
+                Date.now();
+
+            saveHistory();
+
+            document.getElementById(
+                "counter"
+            ).textContent =
+                clickCount;
+
+            document.getElementById(
+                "date"
+            ).textContent =
+                currentDate ||
+                "Click the button!";
+
+            document.getElementById(
+                "equalFeb29"
+            ).checked =
+                feb29SameChance;
+
+            updateProbabilityModeText();
+            updateDuplicates();
+            renderLogs();
+            renderHistory();
         }
 
         /* LOGS */
@@ -4727,13 +5208,17 @@
 
         function openNameModal(
             mode,
-            saveId = null
+            saveId = null,
+            versionId = null
         ) {
             nameModalMode =
                 mode;
 
             nameModalSaveId =
                 saveId;
+
+            nameModalVersionId =
+                versionId;
 
             const title =
                 document.getElementById(
@@ -4762,7 +5247,7 @@
 
             if (
                 mode ===
-                "rename"
+                "renameSave"
             ) {
                 const save =
                     historySaves.find(
@@ -4783,6 +5268,42 @@
 
                 input.placeholder =
                     "Save name";
+
+                noSaveButton.style.display =
+                    "none";
+
+                confirmButton.textContent =
+                    "Save Name";
+            } else if (
+                mode ===
+                "renameVersion"
+            ) {
+                const save =
+                    historySaves.find(
+                        item =>
+                            item.id ===
+                            saveId
+                    );
+
+                const version =
+                    save?.versions?.find(
+                        item =>
+                            item.id ===
+                            versionId
+                    );
+
+                title.textContent =
+                    "Rename old version";
+
+                description.textContent =
+                    "Give this old version its own name.";
+
+                input.value =
+                    version?.name ||
+                    "";
+
+                input.placeholder =
+                    "Version name";
 
                 noSaveButton.style.display =
                     "none";
@@ -4830,6 +5351,9 @@
             nameModalSaveId =
                 null;
 
+            nameModalVersionId =
+                null;
+
             document.getElementById(
                 "namePanel"
             ).classList.remove(
@@ -4848,7 +5372,7 @@
 
             if (
                 nameModalMode ===
-                "rename"
+                "renameSave"
             ) {
                 const save =
                     historySaves.find(
@@ -4876,6 +5400,49 @@
 
                         renderLogs();
                     }
+                }
+
+                closeNameModal();
+
+                return;
+            }
+
+            if (
+                nameModalMode ===
+                "renameVersion"
+            ) {
+                const save =
+                    historySaves.find(
+                        item =>
+                            item.id ===
+                            nameModalSaveId
+                    );
+
+                const version =
+                    save?.versions?.find(
+                        item =>
+                            item.id ===
+                            nameModalVersionId
+                    );
+
+                if (
+                    version
+                ) {
+                    version.name =
+                        enteredName ||
+                        getDefaultVersionName(
+                            (
+                                save.versions
+                                    .indexOf(
+                                        version
+                                    ) +
+                                1
+                            ),
+                            version.timestamp
+                        );
+
+                    saveHistory();
+                    renderHistory();
                 }
 
                 closeNameModal();
@@ -4963,11 +5530,8 @@
                 );
         }
 
-        /*
-         * Called when the document is being left.
-         * This intentionally ignores the Reset auto-save
-         * setting: leaving/refreshing always saves.
-         */
+        /* SAVE BEFORE LEAVING */
+
         function persistBeforeLeaving() {
             if (
                 clickCount <= 0
@@ -4990,7 +5554,7 @@
             persistBeforeLeaving
         );
 
-        /* DELETE */
+        /* DELETE SAVES */
 
         function openDeleteWarning() {
             if (
@@ -5000,8 +5564,22 @@
                 return;
             }
 
+            pendingDeleteType =
+                "save";
+
+            pendingDeleteSaveId =
+                null;
+
+            pendingDeleteVersionId =
+                null;
+
             const count =
                 selectedSaveIds.size;
+
+            document.getElementById(
+                "warningTitle"
+            ).textContent =
+                "Delete saves?";
 
             document.getElementById(
                 "warningText"
@@ -5022,7 +5600,72 @@
             );
         }
 
+        function openVersionDeleteWarning(
+            saveId,
+            versionId
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            const version =
+                save?.versions?.find(
+                    item =>
+                        item.id ===
+                        versionId
+                );
+
+            if (
+                !save ||
+                !version
+            ) {
+                return;
+            }
+
+            pendingDeleteType =
+                "version";
+
+            pendingDeleteSaveId =
+                saveId;
+
+            pendingDeleteVersionId =
+                versionId;
+
+            document.getElementById(
+                "warningTitle"
+            ).textContent =
+                "Delete old version?";
+
+            document.getElementById(
+                "warningText"
+            ).textContent =
+                "Delete \"" +
+                (
+                    version.name ||
+                    "this old version"
+                ) +
+                "\" permanently? This cannot be undone.";
+
+            document.getElementById(
+                "warningPanel"
+            ).classList.add(
+                "open"
+            );
+        }
+
         function closeDeleteWarning() {
+            pendingDeleteType =
+                null;
+
+            pendingDeleteSaveId =
+                null;
+
+            pendingDeleteVersionId =
+                null;
+
             document.getElementById(
                 "warningPanel"
             ).classList.remove(
@@ -5060,6 +5703,71 @@
 
             renderHistory();
             renderLogs();
+        }
+
+        function deleteVersion() {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        pendingDeleteSaveId
+                );
+
+            if (
+                !save ||
+                !Array.isArray(
+                    save.versions
+                )
+            ) {
+                closeDeleteWarning();
+                return;
+            }
+
+            const index =
+                save.versions.findIndex(
+                    version =>
+                        version.id ===
+                        pendingDeleteVersionId
+                );
+
+            if (
+                index ===
+                -1
+            ) {
+                closeDeleteWarning();
+                return;
+            }
+
+            save.versions.splice(
+                index,
+                1
+            );
+
+            saveHistory();
+
+            closeDeleteWarning();
+
+            renderHistory();
+        }
+
+        function confirmDelete() {
+            if (
+                pendingDeleteType ===
+                "version"
+            ) {
+                deleteVersion();
+                return;
+            }
+
+            if (
+                pendingDeleteType ===
+                "save"
+            ) {
+                deleteSelectedSaves();
+                return;
+            }
+
+            closeDeleteWarning();
         }
 
         /* EVENTS */
@@ -5170,7 +5878,7 @@
             "warningConfirm"
         ).addEventListener(
             "click",
-            deleteSelectedSaves
+            confirmDelete
         );
 
         document.getElementById(

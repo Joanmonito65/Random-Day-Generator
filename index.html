@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Day Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            max-height: 100vh;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #infoButton {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            font-family: monospace;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        #infoButton:hover {
+            background: #444;
+        }
+
+        .counter {
+            font-size: clamp(18px, 4vw, 24px);
+            margin-bottom: clamp(15px, 4vh, 35px);
+            flex-shrink: 0;
+        }
+
+        .counter span {
+            font-weight: bold;
+        }
+
+        .date {
+            font-size: clamp(34px, 8vw, 52px);
+            font-weight: bold;
+            min-height: clamp(45px, 9vw, 70px);
+            margin-bottom: clamp(18px, 4vh, 40px);
+            flex-shrink: 0;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 6px;
+        }
+
+        #generateButton {
+            background: #fff;
+            color: #111;
+        }
+
+        #generateButton:hover {
+            background: #ddd;
+        }
+
+        #resetButton {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: auto;
+            height: 38px;
+            padding: 0 13px;
+            margin: 0;
+            border-radius: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            font-size: 13px;
+            z-index: 30;
+        }
+
+        #resetButton:hover {
+            background: #444;
+        }
+
+        .duplicates {
+            margin-top: clamp(18px, 4vh, 40px);
+            text-align: left;
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid #333;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .duplicatesTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .duplicatesTop h2 {
+            margin: 0;
+            font-size: 22px;
+            text-align: left;
+        }
+
+        #sortButton {
+            margin: 0;
+            padding: 9px 12px;
+            font-size: 14px;
+            background: #292929;
+            color: #ddd;
+            border: 1px solid #444;
+            white-space: nowrap;
+        }
+
+        #sortButton:hover {
+            background: #383838;
+        }
+
+        #duplicateList {
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            flex: 1;
+            padding-right: 4px;
+        }
+
+        #duplicateList::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        #duplicateList::-webkit-scrollbar-track {
+            background: #151515;
+            border-radius: 10px;
+        }
+
+        #duplicateList::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        #duplicateList::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .dateCard {
+            background: #242424;
+            border: 1px solid #3a3a3a;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .dateCard:last-child {
+            margin-bottom: 0;
+        }
+
+        .dateCardHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dateCardHeader:hover {
+            background: #2b2b2b;
+        }
+
+        .dateInfo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .dateName {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .appearanceCount {
+            font-size: 14px;
+            color: #aaa;
+            white-space: nowrap;
+        }
+
+        .cardArrow {
+            font-size: 22px;
+            color: #aaa;
+            transition: transform 0.2s;
+        }
+
+        .dateCard.expanded .cardArrow {
+            transform: rotate(180deg);
+        }
+
+        .dateDetails {
+            display: none;
+            padding: 0 16px 14px 16px;
+            border-top: 1px solid #333;
+        }
+
+        .dateCard.expanded .dateDetails {
+            display: block;
+        }
+
+        .milestoneLine {
+            font-size: 14px;
+            color: #aaa;
+            padding: 6px 0;
+        }
+
+        .milestoneLine strong {
+            color: #ddd;
+        }
+
+        .none {
+            text-align: center;
+            color: #999;
+            padding: 10px 0;
+        }
+
+        .probabilityPanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .probabilityBox {
+            width: 100%;
+            max-width: 520px;
+            max-height: calc(100vh - 40px);
+            margin: 0 auto;
+            background: #1b1b1b;
+            border: 1px solid #3a3a3a;
+            border-radius: 16px;
+            padding: 0 24px 24px;
+            text-align: left;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .probabilityBox::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .probabilityBox::-webkit-scrollbar-track {
+            background: #151515;
+            border-radius: 10px;
+        }
+
+        .probabilityBox::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .probabilityBox::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .probabilityHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 -24px 20px;
+            padding: 24px 24px 14px;
+            position: sticky;
+            top: 0;
+            background: #1b1b1b;
+            z-index: 10;
+            border-bottom: 1px solid #1b1b1b;
+        }
+
+        .probabilityHeader h2 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        #closeProbability {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: #333;
+            color: #ddd;
+            border: 1px solid #555;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        #closeProbability:hover {
+            background: #444;
+        }
+
+        .rarityOption {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 14px;
+        }
+
+        .rarityLabel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rarityLabel input {
+            width: 19px;
+            height: 19px;
+            accent-color: white;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .rarityText {
+            font-size: 15px;
+            color: #ddd;
+        }
+
+        .rarityDescription {
+            margin-top: 7px;
+            margin-left: 31px;
+            color: #888;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .calculator {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .calculator h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+        }
+
+        .calculatorDescription {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .inputRow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .inputGroup {
+            margin-bottom: 12px;
+        }
+
+        .inputGroup label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        .inputGroup input,
+        .inputGroup select {
+            width: 100%;
+            background: #151515;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 15px;
+        }
+
+        .dateSelectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .calculateButton {
+            width: 100%;
+            margin: 4px 0 0 0;
+            padding: 11px;
+            background: #fff;
+            color: #111;
+            font-size: 15px;
+        }
+
+        .calculateButton:hover {
+            background: #ddd;
+        }
+
+        .result {
+            margin-top: 14px;
+            padding: 12px;
+            background: #151515;
+            border-radius: 8px;
+            text-align: center;
+            color: #ddd;
+            font-size: 15px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .result strong {
+            color: white;
+            font-size: 18px;
+        }
+
+        .formulaNote {
+            margin-top: 18px;
+            color: #777;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                width: 92%;
+                padding: 12px 0;
+            }
+
+            #infoButton {
+                top: 10px;
+                left: 10px;
+                width: 38px;
+                height: 38px;
+                font-size: 20px;
+            }
+
+            #resetButton {
+                top: 10px;
+                right: 10px;
+                height: 34px;
+                padding: 0 10px;
+                font-size: 12px;
+                border-radius: 9px;
+            }
+
+            .counter {
+                margin-bottom: 12px;
+            }
+
+            .date {
+                margin-bottom: 15px;
+            }
+
+            button {
+                padding: 12px 18px;
+                font-size: 16px;
+            }
+
+            .duplicates {
+                margin-top: 14px;
+                padding: 13px;
+            }
+
+            .duplicatesTop h2 {
+                font-size: 19px;
+            }
+
+            #sortButton {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+
+            .dateCardHeader {
+                padding: 12px;
+            }
+
+            .dateName {
+                font-size: 17px;
+            }
+
+            .appearanceCount {
+                font-size: 12px;
+            }
+
+            .probabilityPanel {
+                padding: 10px;
+            }
+
+            .probabilityBox {
+                max-height: calc(100vh - 20px);
+                padding: 0 18px 18px;
+            }
+
+            .probabilityHeader {
+                margin: 0 -18px 18px;
+                padding: 18px 18px 12px;
+            }
+
+            .probabilityHeader h2 {
+                font-size: 20px;
+            }
+
+            .inputRow {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .dateSelectors {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-height: 650px) {
+            .container {
+                padding: 8px 0;
+            }
+
+            .counter {
+                margin-bottom: 8px;
+            }
+
+            .date {
+                margin-bottom: 10px;
+                min-height: 40px;
+            }
+
+            .duplicates {
+                margin-top: 10px;
+            }
+
+            button {
+                padding: 9px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="infoButton">i</button>
+
+    <div class="container">
+
+        <div class="counter">
+            Times clicked: <span id="counter">0</span>
+        </div>
+
+        <div class="date" id="date">
+            Click the button!
+        </div>
+
+        <button id="generateButton">
+            Random Date
+        </button>
+
+        <div class="duplicates">
+
+            <div class="duplicatesTop">
+                <h2>Repeated Dates</h2>
+
+                <button id="sortButton">
+                    ↕ Appearances
+                </button>
+            </div>
+
+            <div id="duplicateList">
+                <div class="none">
+                    No duplicate dates yet.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <button id="resetButton">
+        Reset
+    </button>
+
+    <div class="probabilityPanel" id="probabilityPanel">
+
+        <div class="probabilityBox">
+
+            <div class="probabilityHeader">
+
+                <h2>Probability Calculator</h2>
+
+                <button id="closeProbability">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="rarityOption">
+
+                <label class="rarityLabel">
+
+                    <input
+                        type="checkbox"
+                        id="equalFeb29"
+                    >
+
+                    <span class="rarityText">
+                        Make February 29 the same chance as every other date
+                    </span>
+
+                </label>
+
+                <div class="rarityDescription">
+                    Off = February 29 is 4× rarer.
+                    On = all 366 dates have an equal chance.
+                </div>
+
+            </div>
+
+            <div class="calculator">
+
+                <h3>Specific Date</h3>
+
+                <div class="calculatorDescription">
+                    Chance that one particular date appears exactly X times in Z clicks.
+                </div>
+
+                <div class="dateSelectors">
+
+                    <div class="inputGroup">
+
+                        <label>Month</label>
+
+                        <select id="specificMonth"></select>
+
+                    </div>
+
+                    <div class="inputGroup">
+
+                        <label>Day</label>
+
+                        <select id="specificDay"></select>
+
+                    </div>
+
+                </div>
+
+                <div class="inputRow">
+
+                    <div class="inputGroup">
+
+                        <label>Clicks</label>
+
+                        <input
+                            id="specificClicks"
+                            type="number"
+                            min="0"
+                            value="30"
+                        >
+
+                    </div>
+
+                    <div class="inputGroup">
+
+                        <label>Appearances</label>
+
+                        <input
+                            id="specificAppearances"
+                            type="number"
+                            min="0"
+                            value="2"
+                        >
+
+                    </div>
+
+                </div>
+
+                <button
+                    class="calculateButton"
+                    id="specificCalculate"
+                >
+                    Calculate
+                </button>
+
+                <div
+                    class="result"
+                    id="specificResult"
+                ></div>
+
+            </div>
+
+            <div class="calculator">
+
+                <h3>Any Date</h3>
+
+                <div class="calculatorDescription">
+                    Chance that at least one date appears X or more times in Z clicks.
+                </div>
+
+                <div class="inputRow">
+
+                    <div class="inputGroup">
+
+                        <label>Clicks</label>
+
+                        <input
+                            id="anyClicks"
+                            type="number"
+                            min="0"
+                            value="30"
+                        >
+
+                    </div>
+
+                    <div class="inputGroup">
+
+                        <label>Appearances</label>
+
+                        <input
+                            id="anyAppearances"
+                            type="number"
+                            min="1"
+                            value="2"
+                        >
+
+                    </div>
+
+                </div>
+
+                <button
+                    class="calculateButton"
+                    id="anyCalculate"
+                >
+                    Calculate
+                </button>
+
+                <div
+                    class="result"
+                    id="anyResult"
+                ></div>
+
+            </div>
+
+            <div class="formulaNote">
+                Current setting:
+                <span id="probabilityModeText">
+                    February 29 is 4× rarer.
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let sortMode = "appearances";
+        let feb29SameChance = false;
+
+        const dateCounts = {};
+        const dateHistory = {};
+
+        const monthNames = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ];
+
+        const daysInEachMonth = [
+            31,
+            29,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31
+        ];
+
+        function populateMonthSelector() {
+            const monthSelect =
+                document.getElementById("specificMonth");
+
+            monthSelect.innerHTML = "";
+
+            monthNames.forEach((month, index) => {
+                const option =
+                    document.createElement("option");
+
+                option.value = index;
+                option.textContent = month;
+
+                monthSelect.appendChild(option);
+            });
+
+            monthSelect.value = "0";
+            updateDaySelector();
+        }
+
+        function updateDaySelector() {
+            const month =
+                Number(
+                    document.getElementById(
+                        "specificMonth"
+                    ).value
+                );
+
+            const daySelect =
+                document.getElementById("specificDay");
+
+            const previousDay =
+                Number(daySelect.value);
+
+            daySelect.innerHTML = "";
+
+            const maxDay =
+                daysInEachMonth[month];
+
+            for (
+                let day = 1;
+                day <= maxDay;
+                day++
+            ) {
+                const option =
+                    document.createElement("option");
+
+                option.value = day;
+                option.textContent = day;
+
+                daySelect.appendChild(option);
+            }
+
+            if (
+                previousDay >= 1 &&
+                previousDay <= maxDay
+            ) {
+                daySelect.value = previousDay;
+            } else {
+                daySelect.value = "1";
+            }
+        }
+
+        function generateDate() {
+            clickCount++;
+
+            document.getElementById(
+                "counter"
+            ).textContent = clickCount;
+
+            const ticketPool = [];
+
+            for (
+                let month = 0;
+                month < 12;
+                month++
+            ) {
+                for (
+                    let day = 1;
+                    day <= daysInEachMonth[month];
+                    day++
+                ) {
+                    if (
+                        month === 1 &&
+                        day === 29
+                    ) {
+                        continue;
+                    }
+
+                    const ticketCount =
+                        feb29SameChance ? 1 : 4;
+
+                    const date = {
+                        month,
+                        day
+                    };
+
+                    for (
+                        let i = 0;
+                        i < ticketCount;
+                        i++
+                    ) {
+                        ticketPool.push(date);
+                    }
+                }
+            }
+
+            ticketPool.push({
+                month: 1,
+                day: 29
+            });
+
+            const randomDate =
+                ticketPool[
+                    Math.floor(
+                        Math.random() *
+                        ticketPool.length
+                    )
+                ];
+
+            const formattedDate =
+                monthNames[randomDate.month] +
+                " " +
+                randomDate.day;
+
+            document.getElementById(
+                "date"
+            ).textContent = formattedDate;
+
+            if (
+                dateCounts[formattedDate]
+            ) {
+                dateCounts[formattedDate]++;
+            } else {
+                dateCounts[formattedDate] = 1;
+            }
+
+            if (
+                !dateHistory[formattedDate]
+            ) {
+                dateHistory[formattedDate] = [];
+            }
+
+            dateHistory[formattedDate].push(
+                clickCount
+            );
+
+            updateDuplicates();
+        }
+
+        function updateDuplicates() {
+            const duplicateList =
+                document.getElementById(
+                    "duplicateList"
+                );
+
+            duplicateList.innerHTML = "";
+
+            let duplicates =
+                Object.keys(dateCounts).filter(
+                    date =>
+                        dateCounts[date] >= 2
+                );
+
+            if (
+                duplicates.length === 0
+            ) {
+                const none =
+                    document.createElement("div");
+
+                none.className = "none";
+                none.textContent =
+                    "No duplicate dates yet.";
+
+                duplicateList.appendChild(
+                    none
+                );
+
+                return;
+            }
+
+            if (
+                sortMode === "appearances"
+            ) {
+                duplicates.sort(
+                    (a, b) =>
+                        dateCounts[b] -
+                        dateCounts[a]
+                );
+            } else {
+                duplicates.sort(
+                    (a, b) =>
+                        dateHistory[a][1] -
+                        dateHistory[b][1]
+                );
+            }
+
+            duplicates.forEach(date => {
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className = "dateCard";
+
+                const header =
+                    document.createElement(
+                        "div"
+                    );
+
+                header.className =
+                    "dateCardHeader";
+
+                const dateInfo =
+                    document.createElement(
+                        "div"
+                    );
+
+                dateInfo.className = "dateInfo";
+
+                const dateName =
+                    document.createElement(
+                        "span"
+                    );
+
+                dateName.className = "dateName";
+                dateName.textContent = date;
+
+                const appearanceCount =
+                    document.createElement(
+                        "span"
+                    );
+
+                appearanceCount.className =
+                    "appearanceCount";
+
+                appearanceCount.textContent =
+                    dateCounts[date] +
+                    " appearances";
+
+                dateInfo.appendChild(
+                    dateName
+                );
+
+                dateInfo.appendChild(
+                    appearanceCount
+                );
+
+                const arrow =
+                    document.createElement(
+                        "span"
+                    );
+
+                arrow.className = "cardArrow";
+                arrow.textContent = "⌄";
+
+                header.appendChild(
+                    dateInfo
+                );
+
+                header.appendChild(
+                    arrow
+                );
+
+                const details =
+                    document.createElement(
+                        "div"
+                    );
+
+                details.className =
+                    "dateDetails";
+
+                dateHistory[date].forEach(
+                    (click, index) => {
+                        const line =
+                            document.createElement(
+                                "div"
+                            );
+
+                        line.className =
+                            "milestoneLine";
+
+                        const label =
+                            index === 0
+                                ? "First appeared"
+                                : getOrdinal(
+                                      index + 1
+                                  ) +
+                                  " appearance";
+
+                        line.innerHTML =
+                            "<strong>" +
+                            label +
+                            "</strong> — Click " +
+                            click;
+
+                        details.appendChild(
+                            line
+                        );
+                    }
+                );
+
+                header.addEventListener(
+                    "click",
+                    () => {
+                        card.classList.toggle(
+                            "expanded"
+                        );
+                    }
+                );
+
+                card.appendChild(header);
+                card.appendChild(details);
+
+                duplicateList.appendChild(
+                    card
+                );
+            });
+        }
+
+        function getOrdinal(number) {
+            const lastTwo =
+                number % 100;
+
+            if (
+                lastTwo >= 11 &&
+                lastTwo <= 13
+            ) {
+                return number + "th";
+            }
+
+            switch (
+                number % 10
+            ) {
+                case 1:
+                    return number + "st";
+                case 2:
+                    return number + "nd";
+                case 3:
+                    return number + "rd";
+                default:
+                    return number + "th";
+            }
+        }
+
+        function toggleSort() {
+            if (
+                sortMode === "appearances"
+            ) {
+                sortMode =
+                    "chronological";
+
+                document.getElementById(
+                    "sortButton"
+                ).textContent =
+                    "◷ Chronological";
+            } else {
+                sortMode =
+                    "appearances";
+
+                document.getElementById(
+                    "sortButton"
+                ).textContent =
+                    "↕ Appearances";
+            }
+
+            updateDuplicates();
+        }
+
+        function openProbability() {
+            document.getElementById(
+                "probabilityPanel"
+            ).style.display = "block";
+        }
+
+        function closeProbability() {
+            document.getElementById(
+                "probabilityPanel"
+            ).style.display = "none";
+        }
+
+        function updateProbabilityModeText() {
+            document.getElementById(
+                "probabilityModeText"
+            ).textContent =
+                feb29SameChance
+                    ? "All 366 dates have the same chance."
+                    : "February 29 is 4× rarer.";
+        }
+
+        function combination(n, k) {
+            if (
+                k < 0 ||
+                k > n
+            ) {
+                return 0;
+            }
+
+            k =
+                Math.min(
+                    k,
+                    n - k
+                );
+
+            let result = 1;
+
+            for (
+                let i = 1;
+                i <= k;
+                i++
+            ) {
+                result =
+                    result *
+                    (n - k + i) /
+                    i;
+            }
+
+            return result;
+        }
+
+        function calculateSpecific() {
+            const clicks =
+                Number(
+                    document.getElementById(
+                        "specificClicks"
+                    ).value
+                );
+
+            const appearances =
+                Number(
+                    document.getElementById(
+                        "specificAppearances"
+                    ).value
+                );
+
+            const month =
+                Number(
+                    document.getElementById(
+                        "specificMonth"
+                    ).value
+                );
+
+            const day =
+                Number(
+                    document.getElementById(
+                        "specificDay"
+                    ).value
+                );
+
+            if (
+                !Number.isInteger(clicks) ||
+                !Number.isInteger(
+                    appearances
+                ) ||
+                clicks < 0 ||
+                appearances < 0 ||
+                appearances > clicks
+            ) {
+                showResult(
+                    "specificResult",
+                    "Please enter valid numbers."
+                );
+
+                return;
+            }
+
+            let p;
+
+            if (
+                feb29SameChance
+            ) {
+                p = 1 / 366;
+            } else if (
+                month === 1 &&
+                day === 29
+            ) {
+                p = 1 / 1461;
+            } else {
+                p = 4 / 1461;
+            }
+
+            const probability =
+                combination(
+                    clicks,
+                    appearances
+                ) *
+                Math.pow(
+                    p,
+                    appearances
+                ) *
+                Math.pow(
+                    1 - p,
+                    clicks - appearances
+                );
+
+            displayProbability(
+                "specificResult",
+                probability,
+                "exactly " +
+                    appearances +
+                    " time" +
+                    (
+                        appearances === 1
+                            ? ""
+                            : "s"
+                    )
+            );
+        }
+
+        function multiplyProbabilityPolynomial(
+            polynomial,
+            p,
+            clicks,
+            maxCount
+        ) {
+            const next =
+                new Array(
+                    clicks + 1
+                ).fill(0);
+
+            for (
+                let s = 0;
+                s <= clicks;
+                s++
+            ) {
+                let total = 0;
+                let factor = 1;
+
+                const maxJ =
+                    Math.min(
+                        maxCount - 1,
+                        s
+                    );
+
+                for (
+                    let j = 0;
+                    j <= maxJ;
+                    j++
+                ) {
+                    if (j > 0) {
+                        factor *=
+                            ((s - j + 1) / j) *
+                            p;
+                    }
+
+                    total +=
+                        polynomial[s - j] *
+                        factor;
+                }
+
+                next[s] = total;
+            }
+
+            return next;
+        }
+
+        function calculateAny() {
+            const clicks =
+                Number(
+                    document.getElementById(
+                        "anyClicks"
+                    ).value
+                );
+
+            const appearances =
+                Number(
+                    document.getElementById(
+                        "anyAppearances"
+                    ).value
+                );
+
+            if (
+                !Number.isInteger(clicks) ||
+                !Number.isInteger(
+                    appearances
+                ) ||
+                clicks < 0 ||
+                appearances < 1
+            ) {
+                showResult(
+                    "anyResult",
+                    "Please enter valid numbers."
+                );
+
+                return;
+            }
+
+            if (
+                clicks === 0
+            ) {
+                displayProbability(
+                    "anyResult",
+                    0,
+                    "at least " +
+                        appearances +
+                        " appearances"
+                );
+
+                return;
+            }
+
+            if (
+                appearances > clicks
+            ) {
+                displayProbability(
+                    "anyResult",
+                    0,
+                    "at least " +
+                        appearances +
+                        " appearances"
+                );
+
+                return;
+            }
+
+            if (
+                appearances === 1
+            ) {
+                displayProbability(
+                    "anyResult",
+                    1,
+                    "at least 1 appearance"
+                );
+
+                return;
+            }
+
+            let polynomial =
+                new Array(
+                    clicks + 1
+                ).fill(0);
+
+            polynomial[0] = 1;
+
+            if (
+                feb29SameChance
+            ) {
+                const p = 1 / 366;
+
+                for (
+                    let i = 0;
+                    i < 366;
+                    i++
+                ) {
+                    polynomial =
+                        multiplyProbabilityPolynomial(
+                            polynomial,
+                            p,
+                            clicks,
+                            appearances
+                        );
+                }
+            } else {
+                const normalP =
+                    4 / 1461;
+
+                const rareP =
+                    1 / 1461;
+
+                for (
+                    let i = 0;
+                    i < 365;
+                    i++
+                ) {
+                    polynomial =
+                        multiplyProbabilityPolynomial(
+                            polynomial,
+                            normalP,
+                            clicks,
+                            appearances
+                        );
+                }
+
+                polynomial =
+                    multiplyProbabilityPolynomial(
+                        polynomial,
+                        rareP,
+                        clicks,
+                        appearances
+                    );
+            }
+
+            let noDateReachesK =
+                polynomial[clicks];
+
+            if (
+                !Number.isFinite(
+                    noDateReachesK
+                )
+            ) {
+                noDateReachesK = 0;
+            }
+
+            let probability =
+                1 -
+                noDateReachesK;
+
+            probability =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        probability
+                    )
+                );
+
+            displayProbability(
+                "anyResult",
+                probability,
+                "at least " +
+                    appearances +
+                    " appearances"
+            );
+        }
+
+        function displayProbability(
+            elementId,
+            probability,
+            description
+        ) {
+            const element =
+                document.getElementById(
+                    elementId
+                );
+
+            const percentage =
+                probability * 100;
+
+            let oneIn = "";
+
+            if (
+                probability > 0 &&
+                probability < 1
+            ) {
+                const value =
+                    1 / probability;
+
+                if (
+                    value < 1000000000
+                ) {
+                    oneIn =
+                        "<br>≈ 1 in " +
+                        formatNumber(value);
+                } else {
+                    oneIn =
+                        "<br>≈ 1 in " +
+                        value.toExponential(
+                            2
+                        );
+                }
+            }
+
+            element.innerHTML =
+                "<strong>" +
+                formatPercentage(
+                    percentage
+                ) +
+                "</strong>" +
+                "<br>" +
+                description +
+                oneIn;
+
+            element.style.display =
+                "block";
+        }
+
+        function showResult(
+            elementId,
+            message
+        ) {
+            const element =
+                document.getElementById(
+                    elementId
+                );
+
+            element.innerHTML =
+                "<strong>" +
+                message +
+                "</strong>";
+
+            element.style.display =
+                "block";
+        }
+
+        function formatPercentage(
+            value
+        ) {
+            if (
+                value === 0
+            ) {
+                return "0%";
+            }
+
+            if (
+                value >= 99.999999
+            ) {
+                return "≈100%";
+            }
+
+            if (
+                value >= 1
+            ) {
+                return (
+                    value.toFixed(4) +
+                    "%"
+                );
+            }
+
+            if (
+                value >= 0.01
+            ) {
+                return (
+                    value.toFixed(6) +
+                    "%"
+                );
+            }
+
+            if (
+                value >= 0.000001
+            ) {
+                return (
+                    value.toFixed(8) +
+                    "%"
+                );
+            }
+
+            return (
+                value.toExponential(
+                    3
+                ) +
+                "%"
+            );
+        }
+
+        function formatNumber(
+            value
+        ) {
+            if (
+                value >= 1000000
+            ) {
+                return value.toExponential(
+                    2
+                );
+            }
+
+            return Math.round(
+                value
+            ).toLocaleString();
+        }
+
+        function resetCounter() {
+            clickCount = 0;
+
+            document.getElementById(
+                "counter"
+            ).textContent = "0";
+
+            for (
+                const date in dateCounts
+            ) {
+                delete dateCounts[date];
+            }
+
+            for (
+                const date in dateHistory
+            ) {
+                delete dateHistory[date];
+            }
+
+            document.getElementById(
+                "date"
+            ).textContent =
+                "Click the button!";
+
+            updateDuplicates();
+        }
+
+        document.getElementById(
+            "infoButton"
+        ).addEventListener(
+            "click",
+            openProbability
+        );
+
+        document.getElementById(
+            "closeProbability"
+        ).addEventListener(
+            "click",
+            closeProbability
+        );
+
+        document.getElementById(
+            "generateButton"
+        ).addEventListener(
+            "click",
+            generateDate
+        );
+
+        document.getElementById(
+            "resetButton"
+        ).addEventListener(
+            "click",
+            resetCounter
+        );
+
+        document.getElementById(
+            "sortButton"
+        ).addEventListener(
+            "click",
+            toggleSort
+        );
+
+        document.getElementById(
+            "specificCalculate"
+        ).addEventListener(
+            "click",
+            calculateSpecific
+        );
+
+        document.getElementById(
+            "anyCalculate"
+        ).addEventListener(
+            "click",
+            calculateAny
+        );
+
+        document.getElementById(
+            "specificMonth"
+        ).addEventListener(
+            "change",
+            updateDaySelector
+        );
+
+        document.getElementById(
+            "equalFeb29"
+        ).addEventListener(
+            "change",
+            function() {
+                feb29SameChance =
+                    this.checked;
+
+                updateProbabilityModeText();
+            }
+        );
+
+        document.getElementById(
+            "probabilityPanel"
+        ).addEventListener(
+            "click",
+            function(event) {
+                if (
+                    event.target === this
+                ) {
+                    closeProbability();
+                }
+            }
+        );
+
+        populateMonthSelector();
+        updateProbabilityModeText();
+    </script>
+
+</body>
+</html>

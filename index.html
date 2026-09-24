@@ -164,29 +164,46 @@
             background: #383838;
         }
 
-        #duplicateList {
+        #duplicateList,
+        .historyList,
+        .logsList {
             overflow-y: auto;
             overflow-x: hidden;
+        }
+
+        #duplicateList {
             min-height: 0;
             flex: 1;
             padding-right: 4px;
         }
 
-        #duplicateList::-webkit-scrollbar {
+        #duplicateList::-webkit-scrollbar,
+        .historyList::-webkit-scrollbar,
+        .logsList::-webkit-scrollbar,
+        .versionList::-webkit-scrollbar {
             width: 7px;
         }
 
-        #duplicateList::-webkit-scrollbar-track {
+        #duplicateList::-webkit-scrollbar-track,
+        .historyList::-webkit-scrollbar-track,
+        .logsList::-webkit-scrollbar-track,
+        .versionList::-webkit-scrollbar-track {
             background: #151515;
             border-radius: 10px;
         }
 
-        #duplicateList::-webkit-scrollbar-thumb {
+        #duplicateList::-webkit-scrollbar-thumb,
+        .historyList::-webkit-scrollbar-thumb,
+        .logsList::-webkit-scrollbar-thumb,
+        .versionList::-webkit-scrollbar-thumb {
             background: #444;
             border-radius: 10px;
         }
 
-        #duplicateList::-webkit-scrollbar-thumb:hover {
+        #duplicateList::-webkit-scrollbar-thumb:hover,
+        .historyList::-webkit-scrollbar-thumb:hover,
+        .logsList::-webkit-scrollbar-thumb:hover,
+        .versionList::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
 
@@ -266,14 +283,16 @@
         .none {
             text-align: center;
             color: #999;
-            padding: 10px 0;
+            padding: 20px 0;
         }
+
+        /* MAIN INFO PANEL */
 
         .probabilityPanel {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.78);
             z-index: 1000;
             overflow: hidden;
             padding: 20px;
@@ -281,47 +300,28 @@
 
         .probabilityBox {
             width: 100%;
-            max-width: 520px;
+            max-width: 580px;
             max-height: calc(100vh - 40px);
             margin: 0 auto;
             background: #1b1b1b;
             border: 1px solid #3a3a3a;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 0 24px 24px;
             text-align: left;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .probabilityBox::-webkit-scrollbar {
-            width: 7px;
-        }
-
-        .probabilityBox::-webkit-scrollbar-track {
-            background: #151515;
-            border-radius: 10px;
-        }
-
-        .probabilityBox::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 10px;
-        }
-
-        .probabilityBox::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .probabilityHeader {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 0 -24px 20px;
-            padding: 24px 24px 14px;
-            position: sticky;
-            top: 0;
+            margin: 0 -24px;
+            padding: 20px 24px 16px;
             background: #1b1b1b;
-            z-index: 10;
-            border-bottom: 1px solid #1b1b1b;
+            flex-shrink: 0;
+            border-bottom: 1px solid #292929;
         }
 
         .probabilityHeader h2 {
@@ -346,11 +346,79 @@
             background: #444;
         }
 
+        /* TABS */
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            background: #121212;
+            border: 1px solid #303030;
+            padding: 4px;
+            border-radius: 11px;
+            margin: 16px 0;
+            flex-shrink: 0;
+        }
+
+        .tabButton {
+            margin: 0;
+            padding: 10px 8px;
+            border-radius: 8px;
+            background: transparent;
+            color: #888;
+            border: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .tabButton:hover {
+            background: #222;
+            color: #ccc;
+        }
+
+        .tabButton.active {
+            background: #333;
+            color: white;
+        }
+
+        .tabContent {
+            display: none;
+            min-height: 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 3px;
+        }
+
+        .tabContent.active {
+            display: block;
+        }
+
+        .tabContent::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .tabContent::-webkit-scrollbar-track {
+            background: #151515;
+            border-radius: 10px;
+        }
+
+        .tabContent::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .tabContent::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* PROBABILITY */
+
         .rarityOption {
             background: #242424;
             border: 1px solid #383838;
             border-radius: 12px;
-            padding: 15px;
+            padding: 13px 14px;
             margin-bottom: 14px;
         }
 
@@ -376,11 +444,10 @@
         }
 
         .rarityDescription {
-            margin-top: 7px;
+            margin-top: 5px;
             margin-left: 31px;
-            color: #888;
-            font-size: 12px;
-            line-height: 1.4;
+            color: #777;
+            font-size: 11px;
         }
 
         .calculator {
@@ -430,10 +497,14 @@
             font-size: 15px;
         }
 
-        .dateSelectors {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .fixedDateDisplay {
+            width: 100%;
+            background: #151515;
+            color: #aaa;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 15px;
         }
 
         .calculateButton {
@@ -471,6 +542,605 @@
             color: #777;
             font-size: 12px;
             line-height: 1.5;
+            padding-bottom: 4px;
+        }
+
+        /* HISTORY */
+
+        .historySection {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .historyTop {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .historySettingRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 3px 0;
+        }
+
+        .historySettingRow + .historySettingRow {
+            border-top: 1px solid #333;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        .historySettingText {
+            min-width: 0;
+        }
+
+        .historySettingTitle {
+            font-size: 14px;
+            font-weight: bold;
+            color: #eee;
+        }
+
+        .historySettingDescription {
+            margin-top: 3px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            border-radius: 50%;
+            background: #aaa;
+            transition: 0.2s;
+        }
+
+        .switch input:checked + .slider {
+            background: #555;
+            border-color: #777;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+            background: white;
+        }
+
+        .historyToolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .historyCount {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .historyActions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .historyActionButton {
+            margin: 0;
+            padding: 8px 11px;
+            font-size: 12px;
+            background: #292929;
+            color: #ddd;
+            border: 1px solid #444;
+        }
+
+        .historyActionButton:hover {
+            background: #383838;
+        }
+
+        .historyActionButton.danger {
+            background: #2c1f1f;
+            border-color: #553838;
+            color: #ddd;
+        }
+
+        .historyActionButton.danger:hover {
+            background: #3a2323;
+        }
+
+        .historyList {
+            min-height: 0;
+            padding-right: 3px;
+            padding-bottom: 4px;
+        }
+
+        .saveCard {
+            background: #242424;
+            border: 1px solid #3a3a3a;
+            border-radius: 13px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .saveCard:hover {
+            border-color: #4a4a4a;
+        }
+
+        .saveCard.pinned {
+            border-color: #5a5a5a;
+        }
+
+        .saveCard.current {
+            border-color: #777;
+        }
+
+        .saveHeader {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 12px;
+        }
+
+        .saveCheckboxWrap {
+            display: none;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .selectionMode .saveCheckboxWrap {
+            display: flex;
+        }
+
+        .saveCheckbox {
+            width: 18px;
+            height: 18px;
+            accent-color: white;
+            cursor: pointer;
+        }
+
+        .saveMain {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .saveTitleRow {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .saveTitle {
+            font-size: 15px;
+            font-weight: bold;
+            color: #eee;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .saveBadge {
+            font-size: 9px;
+            color: #ddd;
+            background: #303030;
+            border: 1px solid #444;
+            padding: 3px 6px;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .pinIndicator {
+            font-size: 13px;
+            color: #ddd;
+            flex-shrink: 0;
+        }
+
+        .saveMeta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .saveActions {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .saveIconButton {
+            width: 31px;
+            height: 31px;
+            padding: 0;
+            margin: 0;
+            border-radius: 8px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            color: #aaa;
+            font-size: 15px;
+        }
+
+        .saveIconButton:hover {
+            background: #393939;
+            color: white;
+        }
+
+        .saveIconButton.pin.active {
+            color: white;
+        }
+
+        .saveExpandButton {
+            transition: transform 0.2s;
+        }
+
+        .saveCard.expanded .saveExpandButton {
+            transform: rotate(180deg);
+        }
+
+        .saveDetails {
+            display: none;
+            border-top: 1px solid #333;
+            padding: 11px 12px 13px;
+        }
+
+        .saveCard.expanded .saveDetails {
+            display: block;
+        }
+
+        .saveDetailLine {
+            color: #888;
+            font-size: 11px;
+            margin-bottom: 7px;
+            line-height: 1.5;
+        }
+
+        .saveDetailLine strong {
+            color: #bbb;
+        }
+
+        .versionHeading {
+            color: #bbb;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 12px 0 7px;
+        }
+
+        .versionList {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 3px;
+        }
+
+        .versionCard {
+            background: #191919;
+            border: 1px solid #303030;
+            border-radius: 9px;
+            padding: 9px;
+            margin-bottom: 6px;
+        }
+
+        .versionCard:last-child {
+            margin-bottom: 0;
+        }
+
+        .versionTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .versionNumber {
+            color: #ccc;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .versionDate {
+            color: #666;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .versionMeta {
+            color: #777;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+
+        .versionReason {
+            color: #aaa;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .noVersions {
+            color: #666;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .emptyHistory {
+            background: #242424;
+            border: 1px dashed #404040;
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+            color: #777;
+        }
+
+        .emptyHistoryTitle {
+            color: #bbb;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .emptyHistoryText {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* LOGS */
+
+        .logsTop {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 13px;
+            margin-bottom: 12px;
+        }
+
+        .logsSaveName {
+            font-size: 15px;
+            font-weight: bold;
+            color: #eee;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .logsSaveMeta {
+            margin-top: 4px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .logsList {
+            min-height: 0;
+            padding-right: 3px;
+            padding-bottom: 5px;
+        }
+
+        .logItem {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 10px;
+            padding: 10px 11px;
+            margin-bottom: 7px;
+        }
+
+        .logText {
+            flex: 1;
+            min-width: 0;
+            color: #ddd;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .logTime {
+            flex-shrink: 0;
+            color: #666;
+            font-size: 9px;
+            white-space: nowrap;
+            padding-top: 1px;
+        }
+
+        .emptyLogs {
+            background: #242424;
+            border: 1px dashed #404040;
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+            color: #777;
+            font-size: 11px;
+        }
+
+        /* NAME MODAL */
+
+        .namePanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .namePanel.open {
+            display: flex;
+        }
+
+        .nameBox {
+            width: 100%;
+            max-width: 390px;
+            background: #202020;
+            border: 1px solid #454545;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .nameBox h3 {
+            margin: 0 0 7px;
+            font-size: 19px;
+        }
+
+        .nameDescription {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        #saveNameInput {
+            width: 100%;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 9px;
+            padding: 11px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #saveNameInput:focus {
+            border-color: #666;
+        }
+
+        .nameButtons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 17px;
+        }
+
+        .nameButton {
+            margin: 0;
+            padding: 9px 13px;
+            font-size: 12px;
+        }
+
+        .nameCancel {
+            background: #303030;
+            color: #ddd;
+            border: 1px solid #454545;
+        }
+
+        .nameNoSave {
+            background: #2b2b2b;
+            color: #bbb;
+            border: 1px solid #444;
+        }
+
+        .nameConfirm {
+            background: #e8e8e8;
+            color: #111;
+        }
+
+        /* DELETE WARNING */
+
+        .warningPanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2200;
+            background: rgba(0, 0, 0, 0.78);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .warningPanel.open {
+            display: flex;
+        }
+
+        .warningBox {
+            width: 100%;
+            max-width: 380px;
+            background: #202020;
+            border: 1px solid #454545;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .warningIcon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #2d2424;
+            border: 1px solid #553838;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ddd;
+            font-size: 19px;
+            margin-bottom: 12px;
+        }
+
+        .warningBox h3 {
+            margin: 0 0 7px;
+            font-size: 19px;
+        }
+
+        .warningBox p {
+            margin: 0;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .warningButtons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .warningButton {
+            margin: 0;
+            padding: 9px 14px;
+            font-size: 13px;
+        }
+
+        .warningCancel {
+            background: #303030;
+            color: #ddd;
+            border: 1px solid #454545;
+        }
+
+        .warningDelete {
+            background: #e8e8e8;
+            color: #111;
         }
 
         @media (max-width: 500px) {
@@ -545,12 +1215,21 @@
             }
 
             .probabilityHeader {
-                margin: 0 -18px 18px;
-                padding: 18px 18px 12px;
+                margin: 0 -18px;
+                padding: 17px 18px 14px;
             }
 
             .probabilityHeader h2 {
                 font-size: 20px;
+            }
+
+            .tabs {
+                margin: 12px 0;
+            }
+
+            .tabButton {
+                font-size: 11px;
+                padding: 9px 4px;
             }
 
             .inputRow {
@@ -558,8 +1237,35 @@
                 gap: 0;
             }
 
-            .dateSelectors {
-                grid-template-columns: 1fr 1fr;
+            .historyToolbar {
+                align-items: flex-start;
+            }
+
+            .historyActions {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .historyActionButton {
+                font-size: 11px;
+                padding: 7px 9px;
+            }
+
+            .saveTitle {
+                font-size: 14px;
+            }
+
+            .saveIconButton {
+                width: 29px;
+                height: 29px;
+            }
+
+            .logItem {
+                gap: 7px;
+            }
+
+            .logTime {
+                font-size: 8px;
             }
         }
 
@@ -630,13 +1336,15 @@
         Reset
     </button>
 
+    <!-- INFO PANEL -->
+
     <div class="probabilityPanel" id="probabilityPanel">
 
         <div class="probabilityBox">
 
             <div class="probabilityHeader">
 
-                <h2>Probability Calculator</h2>
+                <h2>Random Day Info</h2>
 
                 <button id="closeProbability">
                     ×
@@ -644,157 +1352,450 @@
 
             </div>
 
-            <div class="rarityOption">
+            <div class="tabs">
 
-                <label class="rarityLabel">
+                <button
+                    class="tabButton active"
+                    data-tab="probabilityTab"
+                >
+                    Probability
+                </button>
 
-                    <input
-                        type="checkbox"
-                        id="equalFeb29"
+                <button
+                    class="tabButton"
+                    data-tab="historyTab"
+                >
+                    History
+                </button>
+
+                <button
+                    class="tabButton"
+                    data-tab="logsTab"
+                >
+                    Logs
+                </button>
+
+            </div>
+
+            <!-- PROBABILITY -->
+
+            <div
+                class="tabContent active"
+                id="probabilityTab"
+            >
+
+                <div class="rarityOption">
+
+                    <label class="rarityLabel">
+
+                        <input
+                            type="checkbox"
+                            id="equalFeb29"
+                        >
+
+                        <span class="rarityText">
+                            Equal February 29
+                        </span>
+
+                    </label>
+
+                    <div class="rarityDescription">
+                        On: equal • Off: 4× rarer
+                    </div>
+
+                </div>
+
+                <div class="calculator">
+
+                    <h3>Specific Date</h3>
+
+                    <div class="calculatorDescription">
+                        Chance that one particular date appears exactly X times in Z clicks.
+                    </div>
+
+                    <div
+                        class="inputGroup"
+                        id="specificDateChoiceGroup"
                     >
 
-                    <span class="rarityText">
-                        Make February 29 the same chance as every other date
+                        <label>Date</label>
+
+                        <select id="specificDateChoice">
+
+                            <option value="specific">
+                                Specific Date
+                            </option>
+
+                            <option value="feb29">
+                                February 29
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div
+                        class="inputGroup"
+                        id="specificDateFixed"
+                        style="display: none;"
+                    >
+
+                        <label>Date</label>
+
+                        <div class="fixedDateDisplay">
+                            Specific Date
+                        </div>
+
+                    </div>
+
+                    <div class="inputRow">
+
+                        <div class="inputGroup">
+
+                            <label>Clicks</label>
+
+                            <input
+                                id="specificClicks"
+                                type="number"
+                                min="0"
+                                value="30"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Appearances</label>
+
+                            <input
+                                id="specificAppearances"
+                                type="number"
+                                min="0"
+                                value="2"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="calculateButton"
+                        id="specificCalculate"
+                    >
+                        Calculate
+                    </button>
+
+                    <div
+                        class="result"
+                        id="specificResult"
+                    ></div>
+
+                </div>
+
+                <div class="calculator">
+
+                    <h3>Any Date</h3>
+
+                    <div class="calculatorDescription">
+                        Chance that at least one date appears X or more times in Z clicks.
+                    </div>
+
+                    <div class="inputRow">
+
+                        <div class="inputGroup">
+
+                            <label>Clicks</label>
+
+                            <input
+                                id="anyClicks"
+                                type="number"
+                                min="0"
+                                value="30"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Appearances</label>
+
+                            <input
+                                id="anyAppearances"
+                                type="number"
+                                min="1"
+                                value="2"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="calculateButton"
+                        id="anyCalculate"
+                    >
+                        Calculate
+                    </button>
+
+                    <div
+                        class="result"
+                        id="anyResult"
+                    ></div>
+
+                </div>
+
+                <div class="formulaNote">
+                    Current setting:
+                    <span id="probabilityModeText">
+                        February 29 is 4× rarer.
                     </span>
-
-                </label>
-
-                <div class="rarityDescription">
-                    Off = February 29 is 4× rarer.
-                    On = all 366 dates have an equal chance.
                 </div>
 
             </div>
 
-            <div class="calculator">
+            <!-- HISTORY -->
 
-                <h3>Specific Date</h3>
+            <div
+                class="tabContent"
+                id="historyTab"
+            >
 
-                <div class="calculatorDescription">
-                    Chance that one particular date appears exactly X times in Z clicks.
-                </div>
+                <div class="historySection">
 
-                <div class="dateSelectors">
+                    <div class="historyTop">
 
-                    <div class="inputGroup">
+                        <div class="historySettingRow">
 
-                        <label>Month</label>
+                            <div class="historySettingText">
 
-                        <select id="specificMonth"></select>
+                                <div class="historySettingTitle">
+                                    Auto-save on Reset
+                                </div>
+
+                                <div class="historySettingDescription">
+                                    Save the current run before resetting.
+                                </div>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="autoSaveToggle"
+                                    checked
+                                >
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        <div class="historySettingRow">
+
+                            <div class="historySettingText">
+
+                                <div class="historySettingTitle">
+                                    Name New Saves
+                                </div>
+
+                                <div class="historySettingDescription">
+                                    Ask for a name when a new save is created.
+                                </div>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="customNamesToggle"
+                                >
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                        </div>
 
                     </div>
 
-                    <div class="inputGroup">
+                    <div class="historyToolbar">
 
-                        <label>Day</label>
-
-                        <select id="specificDay"></select>
-
-                    </div>
-
-                </div>
-
-                <div class="inputRow">
-
-                    <div class="inputGroup">
-
-                        <label>Clicks</label>
-
-                        <input
-                            id="specificClicks"
-                            type="number"
-                            min="0"
-                            value="30"
+                        <div
+                            class="historyCount"
+                            id="historyCount"
                         >
+                            0 saves
+                        </div>
+
+                        <div class="historyActions">
+
+                            <button
+                                class="historyActionButton"
+                                id="deleteModeButton"
+                            >
+                                Delete
+                            </button>
+
+                            <button
+                                class="historyActionButton"
+                                id="cancelDeleteButton"
+                                style="display: none;"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                class="historyActionButton danger"
+                                id="deleteSelectedButton"
+                                style="display: none;"
+                            >
+                                Delete Selected
+                            </button>
+
+                        </div>
 
                     </div>
 
-                    <div class="inputGroup">
-
-                        <label>Appearances</label>
-
-                        <input
-                            id="specificAppearances"
-                            type="number"
-                            min="0"
-                            value="2"
-                        >
-
-                    </div>
+                    <div
+                        class="historyList"
+                        id="historyList"
+                    ></div>
 
                 </div>
 
-                <button
-                    class="calculateButton"
-                    id="specificCalculate"
-                >
-                    Calculate
-                </button>
+            </div>
+
+            <!-- LOGS -->
+
+            <div
+                class="tabContent"
+                id="logsTab"
+            >
+
+                <div class="logsTop">
+
+                    <div
+                        class="logsSaveName"
+                        id="logsSaveName"
+                    >
+                        Current Session
+                    </div>
+
+                    <div
+                        class="logsSaveMeta"
+                        id="logsSaveMeta"
+                    >
+                        0 log entries
+                    </div>
+
+                </div>
 
                 <div
-                    class="result"
-                    id="specificResult"
+                    class="logsList"
+                    id="logsList"
                 ></div>
 
             </div>
 
-            <div class="calculator">
+        </div>
 
-                <h3>Any Date</h3>
+    </div>
 
-                <div class="calculatorDescription">
-                    Chance that at least one date appears X or more times in Z clicks.
-                </div>
+    <!-- SAVE NAME MODAL -->
 
-                <div class="inputRow">
+    <div
+        class="namePanel"
+        id="namePanel"
+    >
 
-                    <div class="inputGroup">
+        <div class="nameBox">
 
-                        <label>Clicks</label>
+            <h3 id="nameModalTitle">
+                Name your save
+            </h3>
 
-                        <input
-                            id="anyClicks"
-                            type="number"
-                            min="0"
-                            value="30"
-                        >
+            <div
+                class="nameDescription"
+                id="nameModalDescription"
+            >
+                Give this run a name so it is easy to find later.
+            </div>
 
-                    </div>
+            <input
+                id="saveNameInput"
+                type="text"
+                maxlength="80"
+                placeholder="Example: My 3,000 Click Run"
+            >
 
-                    <div class="inputGroup">
-
-                        <label>Appearances</label>
-
-                        <input
-                            id="anyAppearances"
-                            type="number"
-                            min="1"
-                            value="2"
-                        >
-
-                    </div>
-
-                </div>
+            <div class="nameButtons">
 
                 <button
-                    class="calculateButton"
-                    id="anyCalculate"
+                    class="nameButton nameCancel"
+                    id="nameCancel"
                 >
-                    Calculate
+                    Cancel
                 </button>
 
-                <div
-                    class="result"
-                    id="anyResult"
-                ></div>
+                <button
+                    class="nameButton nameNoSave"
+                    id="nameNoSave"
+                    style="display: none;"
+                >
+                    Reset Without Saving
+                </button>
+
+                <button
+                    class="nameButton nameConfirm"
+                    id="nameConfirm"
+                >
+                    Save
+                </button>
 
             </div>
 
-            <div class="formulaNote">
-                Current setting:
-                <span id="probabilityModeText">
-                    February 29 is 4× rarer.
-                </span>
+        </div>
+
+    </div>
+
+    <!-- DELETE WARNING -->
+
+    <div
+        class="warningPanel"
+        id="warningPanel"
+    >
+
+        <div class="warningBox">
+
+            <div class="warningIcon">
+                !
+            </div>
+
+            <h3>Delete saves?</h3>
+
+            <p id="warningText">
+                This will permanently delete the selected saves.
+            </p>
+
+            <div class="warningButtons">
+
+                <button
+                    class="warningButton warningCancel"
+                    id="warningCancel"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="warningButton warningDelete"
+                    id="warningConfirm"
+                >
+                    Delete
+                </button>
+
             </div>
 
         </div>
@@ -806,8 +1807,34 @@
         let sortMode = "appearances";
         let feb29SameChance = false;
 
+        let currentDate = "";
+        let currentSaveId = null;
+        let currentSaveName = "Current Session";
+
+        let historySaves = [];
+        let sessionLogs = [];
+
+        let autoSaveOnReset = true;
+        let customNamesOn = false;
+
+        let selectionMode = false;
+
+        const selectedSaveIds = new Set();
+
         const dateCounts = {};
         const dateHistory = {};
+
+        const STORAGE_KEY =
+            "randomDayGeneratorHistory";
+
+        const AUTOSAVE_KEY =
+            "randomDayGeneratorAutoSave";
+
+        const CUSTOM_NAMES_KEY =
+            "randomDayGeneratorCustomNames";
+
+        let nameModalMode = null;
+        let nameModalSaveId = null;
 
         const monthNames = [
             "January",
@@ -839,75 +1866,776 @@
             31
         ];
 
-        function populateMonthSelector() {
-            const monthSelect =
-                document.getElementById("specificMonth");
+        function safeStorageGet(
+            key,
+            fallback
+        ) {
+            try {
+                const value =
+                    localStorage.getItem(
+                        key
+                    );
 
-            monthSelect.innerHTML = "";
+                if (
+                    value === null
+                ) {
+                    return fallback;
+                }
 
-            monthNames.forEach((month, index) => {
-                const option =
-                    document.createElement("option");
-
-                option.value = index;
-                option.textContent = month;
-
-                monthSelect.appendChild(option);
-            });
-
-            monthSelect.value = "0";
-            updateDaySelector();
+                return JSON.parse(
+                    value
+                );
+            } catch (error) {
+                return fallback;
+            }
         }
 
-        function updateDaySelector() {
-            const month =
-                Number(
-                    document.getElementById(
-                        "specificMonth"
-                    ).value
+        function safeStorageSet(
+            key,
+            value
+        ) {
+            try {
+                localStorage.setItem(
+                    key,
+                    JSON.stringify(
+                        value
+                    )
                 );
 
-            const daySelect =
-                document.getElementById("specificDay");
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
 
-            const previousDay =
-                Number(daySelect.value);
+        function cloneObject(
+            object
+        ) {
+            return JSON.parse(
+                JSON.stringify(
+                    object
+                )
+            );
+        }
 
-            daySelect.innerHTML = "";
-
-            const maxDay =
-                daysInEachMonth[month];
-
-            for (
-                let day = 1;
-                day <= maxDay;
-                day++
+        function createId() {
+            if (
+                window.crypto &&
+                typeof window.crypto.randomUUID ===
+                    "function"
             ) {
-                const option =
-                    document.createElement("option");
+                return window.crypto.randomUUID();
+            }
 
-                option.value = day;
-                option.textContent = day;
+            return (
+                Date.now().toString(36) +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2)
+            );
+        }
 
-                daySelect.appendChild(option);
+        function formatSaveDate(
+            timestamp
+        ) {
+            return new Date(
+                timestamp
+            ).toLocaleString(
+                undefined,
+                {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+        function formatLogTime(
+            timestamp
+        ) {
+            return new Date(
+                timestamp
+            ).toLocaleString(
+                undefined,
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false
+                }
+            );
+        }
+
+        function getDefaultSaveName() {
+            return (
+                "Save — " +
+                formatSaveDate(
+                    Date.now()
+                )
+            );
+        }
+
+        function getSaveVersionState(
+            source
+        ) {
+            return {
+                timestamp:
+                    source.updatedAt ||
+                    source.timestamp ||
+                    Date.now(),
+
+                clickCount:
+                    source.clickCount,
+
+                currentDate:
+                    source.currentDate ||
+                    "",
+
+                dateCounts:
+                    cloneObject(
+                        source.dateCounts ||
+                            {}
+                    ),
+
+                dateHistory:
+                    cloneObject(
+                        source.dateHistory ||
+                            {}
+                    ),
+
+                feb29SameChance:
+                    Boolean(
+                        source.feb29SameChance
+                    ),
+
+                logs:
+                    cloneObject(
+                        source.logs ||
+                            []
+                    )
+            };
+        }
+
+        function getCurrentState() {
+            return {
+                clickCount,
+                currentDate,
+                dateCounts:
+                    cloneObject(
+                        dateCounts
+                    ),
+                dateHistory:
+                    cloneObject(
+                        dateHistory
+                    ),
+                feb29SameChance,
+                logs:
+                    cloneObject(
+                        sessionLogs
+                    )
+            };
+        }
+
+        function getComparableSignature(
+            state
+        ) {
+            return JSON.stringify({
+                clickCount:
+                    state.clickCount,
+
+                currentDate:
+                    state.currentDate ||
+                    "",
+
+                dateCounts:
+                    state.dateCounts ||
+                    {},
+
+                dateHistory:
+                    state.dateHistory ||
+                    {},
+
+                feb29SameChance:
+                    Boolean(
+                        state.feb29SameChance
+                    )
+            });
+        }
+
+        function getSaveSignature(
+            save
+        ) {
+            return getComparableSignature(
+                save
+            );
+        }
+
+        function getCurrentSignature() {
+            return getComparableSignature(
+                getCurrentState()
+            );
+        }
+
+        function loadHistory() {
+            const loaded =
+                safeStorageGet(
+                    STORAGE_KEY,
+                    []
+                );
+
+            if (
+                !Array.isArray(
+                    loaded
+                )
+            ) {
+                historySaves = [];
+                return;
+            }
+
+            historySaves =
+                loaded
+                    .filter(
+                        save =>
+                            save &&
+                            typeof save ===
+                                "object" &&
+                            typeof save.id ===
+                                "string" &&
+                            typeof save.timestamp ===
+                                "number" &&
+                            typeof save.clickCount ===
+                                "number" &&
+                            typeof save.dateCounts ===
+                                "object" &&
+                            typeof save.dateHistory ===
+                                "object" &&
+                            typeof save.feb29SameChance ===
+                                "boolean"
+                    )
+                    .map(
+                        save => ({
+                            ...save,
+
+                            name:
+                                typeof save.name ===
+                                "string"
+                                    ? save.name
+                                    : "Save — " +
+                                      formatSaveDate(
+                                          save.timestamp
+                                      ),
+
+                            pinned:
+                                Boolean(
+                                    save.pinned
+                                ),
+
+                            currentDate:
+                                typeof save.currentDate ===
+                                "string"
+                                    ? save.currentDate
+                                    : "",
+
+                            logs:
+                                Array.isArray(
+                                    save.logs
+                                )
+                                    ? save.logs
+                                    : [],
+
+                            updatedAt:
+                                typeof save.updatedAt ===
+                                "number"
+                                    ? save.updatedAt
+                                    : save.timestamp,
+
+                            versions:
+                                Array.isArray(
+                                    save.versions
+                                )
+                                    ? save.versions
+                                    : []
+                        })
+                    );
+
+            saveHistory();
+        }
+
+        function loadSettings() {
+            const savedAutoSave =
+                safeStorageGet(
+                    AUTOSAVE_KEY,
+                    true
+                );
+
+            const savedCustomNames =
+                safeStorageGet(
+                    CUSTOM_NAMES_KEY,
+                    false
+                );
+
+            autoSaveOnReset =
+                savedAutoSave !== false;
+
+            customNamesOn =
+                savedCustomNames === true;
+
+            document.getElementById(
+                "autoSaveToggle"
+            ).checked =
+                autoSaveOnReset;
+
+            document.getElementById(
+                "customNamesToggle"
+            ).checked =
+                customNamesOn;
+        }
+
+        function saveHistory() {
+            safeStorageSet(
+                STORAGE_KEY,
+                historySaves
+            );
+        }
+
+        function saveSettings() {
+            safeStorageSet(
+                AUTOSAVE_KEY,
+                autoSaveOnReset
+            );
+
+            safeStorageSet(
+                CUSTOM_NAMES_KEY,
+                customNamesOn
+            );
+        }
+
+        function addLog(
+            text,
+            timestamp = Date.now()
+        ) {
+            sessionLogs.push({
+                id: createId(),
+                timestamp,
+                text
+            });
+
+            renderLogs();
+        }
+
+        function getLeader(
+            counts
+        ) {
+            const dates =
+                Object.keys(
+                    counts
+                );
+
+            if (
+                dates.length === 0
+            ) {
+                return null;
+            }
+
+            dates.sort(
+                (a, b) => {
+                    const countDifference =
+                        counts[b] -
+                        counts[a];
+
+                    if (
+                        countDifference !==
+                        0
+                    ) {
+                        return countDifference;
+                    }
+
+                    return (
+                        (
+                            dateHistory[
+                                a
+                            ]?.[0] ??
+                            Infinity
+                        ) -
+                        (
+                            dateHistory[
+                                b
+                            ]?.[0] ??
+                            Infinity
+                        )
+                    );
+                }
+            );
+
+            return {
+                date: dates[0],
+                count:
+                    counts[
+                        dates[0]
+                    ]
+            };
+        }
+
+        function findDuplicateSave(
+            signature,
+            excludeId = null
+        ) {
+            return (
+                historySaves.find(
+                    save =>
+                        save.id !==
+                            excludeId &&
+                        getSaveSignature(
+                            save
+                        ) ===
+                            signature
+                ) || null
+            );
+        }
+
+        /*
+         * Put the current state of a save into
+         * the save's version history.
+         */
+        function archiveSaveVersion(
+            save,
+            reason
+        ) {
+            const previousState =
+                getSaveVersionState(
+                    save
+                );
+
+            const previousSignature =
+                getComparableSignature(
+                    previousState
+                );
+
+            const lastVersion =
+                save.versions?.[
+                    save.versions.length -
+                        1
+                ];
+
+            if (
+                lastVersion &&
+                getComparableSignature(
+                    lastVersion
+                ) ===
+                    previousSignature
+            ) {
+                return;
             }
 
             if (
-                previousDay >= 1 &&
-                previousDay <= maxDay
+                !Array.isArray(
+                    save.versions
+                )
             ) {
-                daySelect.value = previousDay;
-            } else {
-                daySelect.value = "1";
+                save.versions = [];
             }
+
+            save.versions.push({
+                id: createId(),
+                timestamp:
+                    previousState.timestamp,
+                clickCount:
+                    previousState.clickCount,
+                currentDate:
+                    previousState.currentDate,
+                dateCounts:
+                    previousState.dateCounts,
+                dateHistory:
+                    previousState.dateHistory,
+                feb29SameChance:
+                    previousState.feb29SameChance,
+                logs:
+                    previousState.logs,
+                reason
+            });
+        }
+
+        /*
+         * Update the currently opened save.
+         * The previous state becomes an old version.
+         */
+        function updateCurrentSave(
+            reason
+        ) {
+            if (
+                !currentSaveId ||
+                clickCount <= 0
+            ) {
+                return null;
+            }
+
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        currentSaveId
+                );
+
+            if (
+                !save
+            ) {
+                currentSaveId = null;
+                return null;
+            }
+
+            const currentState =
+                getCurrentState();
+
+            const currentSignature =
+                getComparableSignature(
+                    currentState
+                );
+
+            const existingSignature =
+                getSaveSignature(
+                    save
+                );
+
+            if (
+                currentSignature ===
+                existingSignature
+            ) {
+                return save;
+            }
+
+            /*
+             * Don't create a duplicate save.
+             * If another save already represents the
+             * exact new state, switch the current save
+             * to that existing save instead.
+             */
+            const duplicate =
+                findDuplicateSave(
+                    currentSignature,
+                    save.id
+                );
+
+            if (
+                duplicate
+            ) {
+                currentSaveId =
+                    duplicate.id;
+
+                currentSaveName =
+                    duplicate.name ||
+                    "Unnamed Save";
+
+                return duplicate;
+            }
+
+            archiveSaveVersion(
+                save,
+                reason
+            );
+
+            save.clickCount =
+                currentState.clickCount;
+
+            save.currentDate =
+                currentState.currentDate;
+
+            save.dateCounts =
+                cloneObject(
+                    currentState.dateCounts
+                );
+
+            save.dateHistory =
+                cloneObject(
+                    currentState.dateHistory
+                );
+
+            save.feb29SameChance =
+                currentState.feb29SameChance;
+
+            save.logs =
+                cloneObject(
+                    currentState.logs
+                );
+
+            save.updatedAt =
+                Date.now();
+
+            currentSaveName =
+                save.name;
+
+            saveHistory();
+            renderHistory();
+
+            return save;
+        }
+
+        /*
+         * Save a new run when there isn't already
+         * a save attached to the current run.
+         */
+        function createSaveFromCurrentRun(
+            name
+        ) {
+            if (
+                clickCount <= 0
+            ) {
+                return null;
+            }
+
+            const state =
+                getCurrentState();
+
+            const signature =
+                getComparableSignature(
+                    state
+                );
+
+            const duplicate =
+                findDuplicateSave(
+                    signature
+                );
+
+            if (
+                duplicate
+            ) {
+                currentSaveId =
+                    duplicate.id;
+
+                currentSaveName =
+                    duplicate.name ||
+                    "Unnamed Save";
+
+                return duplicate;
+            }
+
+            const newSave = {
+                id: createId(),
+                timestamp: Date.now(),
+                updatedAt: Date.now(),
+
+                name:
+                    name ||
+                    getDefaultSaveName(),
+
+                pinned: false,
+
+                clickCount:
+                    state.clickCount,
+
+                currentDate:
+                    state.currentDate,
+
+                dateCounts:
+                    cloneObject(
+                        state.dateCounts
+                    ),
+
+                dateHistory:
+                    cloneObject(
+                        state.dateHistory
+                    ),
+
+                feb29SameChance:
+                    state.feb29SameChance,
+
+                logs:
+                    cloneObject(
+                        state.logs
+                    ),
+
+                versions: []
+            };
+
+            historySaves.push(
+                newSave
+            );
+
+            currentSaveId =
+                newSave.id;
+
+            currentSaveName =
+                newSave.name;
+
+            saveHistory();
+            renderHistory();
+
+            return newSave;
+        }
+
+        /*
+         * Ensures the current run is stored.
+         * Existing save => update it.
+         * New run => create a save.
+         */
+        function ensureCurrentRunSaved(
+            reason
+        ) {
+            if (
+                clickCount <= 0
+            ) {
+                return null;
+            }
+
+            if (
+                currentSaveId
+            ) {
+                return updateCurrentSave(
+                    reason
+                );
+            }
+
+            return createSaveFromCurrentRun();
+        }
+
+        function clearCurrentRun() {
+            clickCount = 0;
+
+            currentDate = "";
+            currentSaveId = null;
+            currentSaveName =
+                "Current Session";
+
+            sessionLogs = [];
+
+            for (
+                const date in dateCounts
+            ) {
+                delete dateCounts[
+                    date
+                ];
+            }
+
+            for (
+                const date in dateHistory
+            ) {
+                delete dateHistory[
+                    date
+                ];
+            }
+
+            document.getElementById(
+                "counter"
+            ).textContent =
+                "0";
+
+            document.getElementById(
+                "date"
+            ).textContent =
+                "Click the button!";
+
+            updateDuplicates();
+            renderLogs();
+            renderHistory();
         }
 
         function generateDate() {
             clickCount++;
-
-            document.getElementById(
-                "counter"
-            ).textContent = clickCount;
 
             const ticketPool = [];
 
@@ -918,7 +2646,10 @@
             ) {
                 for (
                     let day = 1;
-                    day <= daysInEachMonth[month];
+                    day <=
+                    daysInEachMonth[
+                        month
+                    ];
                     day++
                 ) {
                     if (
@@ -929,7 +2660,9 @@
                     }
 
                     const ticketCount =
-                        feb29SameChance ? 1 : 4;
+                        feb29SameChance
+                            ? 1
+                            : 4;
 
                     const date = {
                         month,
@@ -938,10 +2671,13 @@
 
                     for (
                         let i = 0;
-                        i < ticketCount;
+                        i <
+                        ticketCount;
                         i++
                     ) {
-                        ticketPool.push(date);
+                        ticketPool.push(
+                            date
+                        );
                     }
                 }
             }
@@ -955,36 +2691,140 @@
                 ticketPool[
                     Math.floor(
                         Math.random() *
-                        ticketPool.length
+                            ticketPool.length
                     )
                 ];
 
             const formattedDate =
-                monthNames[randomDate.month] +
+                monthNames[
+                    randomDate.month
+                ] +
                 " " +
                 randomDate.day;
 
+            const previousCounts =
+                cloneObject(
+                    dateCounts
+                );
+
+            const previousLeader =
+                getLeader(
+                    previousCounts
+                );
+
+            currentDate =
+                formattedDate;
+
+            document.getElementById(
+                "counter"
+            ).textContent =
+                clickCount;
+
             document.getElementById(
                 "date"
-            ).textContent = formattedDate;
+            ).textContent =
+                formattedDate;
 
             if (
-                dateCounts[formattedDate]
+                dateCounts[
+                    formattedDate
+                ]
             ) {
-                dateCounts[formattedDate]++;
+                dateCounts[
+                    formattedDate
+                ]++;
             } else {
-                dateCounts[formattedDate] = 1;
+                dateCounts[
+                    formattedDate
+                ] = 1;
             }
 
             if (
-                !dateHistory[formattedDate]
+                !dateHistory[
+                    formattedDate
+                ]
             ) {
-                dateHistory[formattedDate] = [];
+                dateHistory[
+                    formattedDate
+                ] = [];
             }
 
-            dateHistory[formattedDate].push(
+            dateHistory[
+                formattedDate
+            ].push(
                 clickCount
             );
+
+            const newCount =
+                dateCounts[
+                    formattedDate
+                ];
+
+            const eventTime =
+                Date.now();
+
+            if (
+                newCount === 1
+            ) {
+                addLog(
+                    "Click " +
+                        clickCount +
+                        ", " +
+                        formattedDate +
+                        " has made its first app!",
+                    eventTime
+                );
+            } else {
+                addLog(
+                    "Click " +
+                        clickCount +
+                        ", " +
+                        formattedDate +
+                        " reached " +
+                        newCount +
+                        " apps!",
+                    eventTime
+                );
+            }
+
+            if (
+                previousLeader &&
+                previousLeader.date !==
+                    formattedDate &&
+                newCount >
+                    previousLeader.count
+            ) {
+                addLog(
+                    formattedDate +
+                        " has passed " +
+                        previousLeader.date +
+                        " at " +
+                        previousLeader.count +
+                        " apps, click " +
+                        clickCount,
+                    eventTime
+                );
+
+                addLog(
+                    formattedDate +
+                        " is now top 1 with " +
+                        newCount +
+                        " apps at click " +
+                        clickCount,
+                    eventTime
+                );
+            } else if (
+                !previousLeader
+            ) {
+                addLog(
+                    formattedDate +
+                        " is now top 1 with " +
+                        newCount +
+                        " app at click " +
+                        clickCount,
+                    eventTime
+                );
+            }
 
             updateDuplicates();
         }
@@ -995,21 +2835,31 @@
                     "duplicateList"
                 );
 
-            duplicateList.innerHTML = "";
+            duplicateList.innerHTML =
+                "";
 
             let duplicates =
-                Object.keys(dateCounts).filter(
+                Object.keys(
+                    dateCounts
+                ).filter(
                     date =>
-                        dateCounts[date] >= 2
+                        dateCounts[
+                            date
+                        ] >= 2
                 );
 
             if (
-                duplicates.length === 0
+                duplicates.length ===
+                0
             ) {
                 const none =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                none.className = "none";
+                none.className =
+                    "none";
+
                 none.textContent =
                     "No duplicate dates yet.";
 
@@ -1021,7 +2871,8 @@
             }
 
             if (
-                sortMode === "appearances"
+                sortMode ===
+                "appearances"
             ) {
                 duplicates.sort(
                     (a, b) =>
@@ -1031,135 +2882,163 @@
             } else {
                 duplicates.sort(
                     (a, b) =>
-                        dateHistory[a][1] -
-                        dateHistory[b][1]
+                        dateHistory[
+                            a
+                        ][1] -
+                        dateHistory[
+                            b
+                        ][1]
                 );
             }
 
-            duplicates.forEach(date => {
-                const card =
-                    document.createElement(
-                        "div"
+            duplicates.forEach(
+                date => {
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "dateCard";
+
+                    const header =
+                        document.createElement(
+                            "div"
+                        );
+
+                    header.className =
+                        "dateCardHeader";
+
+                    const dateInfo =
+                        document.createElement(
+                            "div"
+                        );
+
+                    dateInfo.className =
+                        "dateInfo";
+
+                    const dateName =
+                        document.createElement(
+                            "span"
+                        );
+
+                    dateName.className =
+                        "dateName";
+
+                    dateName.textContent =
+                        date;
+
+                    const appearanceCount =
+                        document.createElement(
+                            "span"
+                        );
+
+                    appearanceCount.className =
+                        "appearanceCount";
+
+                    appearanceCount.textContent =
+                        dateCounts[
+                            date
+                        ] +
+                        " appearances";
+
+                    dateInfo.appendChild(
+                        dateName
                     );
 
-                card.className = "dateCard";
-
-                const header =
-                    document.createElement(
-                        "div"
+                    dateInfo.appendChild(
+                        appearanceCount
                     );
 
-                header.className =
-                    "dateCardHeader";
+                    const arrow =
+                        document.createElement(
+                            "span"
+                        );
 
-                const dateInfo =
-                    document.createElement(
-                        "div"
+                    arrow.className =
+                        "cardArrow";
+
+                    arrow.textContent =
+                        "⌄";
+
+                    header.appendChild(
+                        dateInfo
                     );
 
-                dateInfo.className = "dateInfo";
-
-                const dateName =
-                    document.createElement(
-                        "span"
+                    header.appendChild(
+                        arrow
                     );
 
-                dateName.className = "dateName";
-                dateName.textContent = date;
+                    const details =
+                        document.createElement(
+                            "div"
+                        );
 
-                const appearanceCount =
-                    document.createElement(
-                        "span"
-                    );
+                    details.className =
+                        "dateDetails";
 
-                appearanceCount.className =
-                    "appearanceCount";
+                    dateHistory[
+                        date
+                    ].forEach(
+                        (
+                            click,
+                            index
+                        ) => {
+                            const line =
+                                document.createElement(
+                                    "div"
+                                );
 
-                appearanceCount.textContent =
-                    dateCounts[date] +
-                    " appearances";
+                            line.className =
+                                "milestoneLine";
 
-                dateInfo.appendChild(
-                    dateName
-                );
+                            const label =
+                                index === 0
+                                    ? "First appeared"
+                                    : getOrdinal(
+                                          index + 1
+                                      ) +
+                                      " appearance";
 
-                dateInfo.appendChild(
-                    appearanceCount
-                );
+                            line.innerHTML =
+                                "<strong>" +
+                                label +
+                                "</strong> — Click " +
+                                click;
 
-                const arrow =
-                    document.createElement(
-                        "span"
-                    );
-
-                arrow.className = "cardArrow";
-                arrow.textContent = "⌄";
-
-                header.appendChild(
-                    dateInfo
-                );
-
-                header.appendChild(
-                    arrow
-                );
-
-                const details =
-                    document.createElement(
-                        "div"
-                    );
-
-                details.className =
-                    "dateDetails";
-
-                dateHistory[date].forEach(
-                    (click, index) => {
-                        const line =
-                            document.createElement(
-                                "div"
+                            details.appendChild(
+                                line
                             );
+                        }
+                    );
 
-                        line.className =
-                            "milestoneLine";
+                    header.addEventListener(
+                        "click",
+                        () => {
+                            card.classList.toggle(
+                                "expanded"
+                            );
+                        }
+                    );
 
-                        const label =
-                            index === 0
-                                ? "First appeared"
-                                : getOrdinal(
-                                      index + 1
-                                  ) +
-                                  " appearance";
+                    card.appendChild(
+                        header
+                    );
 
-                        line.innerHTML =
-                            "<strong>" +
-                            label +
-                            "</strong> — Click " +
-                            click;
+                    card.appendChild(
+                        details
+                    );
 
-                        details.appendChild(
-                            line
-                        );
-                    }
-                );
-
-                header.addEventListener(
-                    "click",
-                    () => {
-                        card.classList.toggle(
-                            "expanded"
-                        );
-                    }
-                );
-
-                card.appendChild(header);
-                card.appendChild(details);
-
-                duplicateList.appendChild(
-                    card
-                );
-            });
+                    duplicateList.appendChild(
+                        card
+                    );
+                }
+            );
         }
 
-        function getOrdinal(number) {
+        function getOrdinal(
+            number
+        ) {
             const lastTwo =
                 number % 100;
 
@@ -1167,26 +3046,45 @@
                 lastTwo >= 11 &&
                 lastTwo <= 13
             ) {
-                return number + "th";
+                return (
+                    number +
+                    "th"
+                );
             }
 
             switch (
                 number % 10
             ) {
                 case 1:
-                    return number + "st";
+                    return (
+                        number +
+                        "st"
+                    );
+
                 case 2:
-                    return number + "nd";
+                    return (
+                        number +
+                        "nd"
+                    );
+
                 case 3:
-                    return number + "rd";
+                    return (
+                        number +
+                        "rd"
+                    );
+
                 default:
-                    return number + "th";
+                    return (
+                        number +
+                        "th"
+                    );
             }
         }
 
         function toggleSort() {
             if (
-                sortMode === "appearances"
+                sortMode ===
+                "appearances"
             ) {
                 sortMode =
                     "chronological";
@@ -1208,16 +3106,73 @@
             updateDuplicates();
         }
 
+        /* INFO PANEL */
+
         function openProbability() {
+            switchTab(
+                "probabilityTab"
+            );
+
+            updateSpecificDateChoice();
+
             document.getElementById(
                 "probabilityPanel"
-            ).style.display = "block";
+            ).style.display =
+                "block";
         }
 
         function closeProbability() {
             document.getElementById(
                 "probabilityPanel"
-            ).style.display = "none";
+            ).style.display =
+                "none";
+        }
+
+        function switchTab(
+            tabId
+        ) {
+            document
+                .querySelectorAll(
+                    ".tabButton"
+                )
+                .forEach(
+                    button => {
+                        button.classList.toggle(
+                            "active",
+                            button.dataset
+                                .tab ===
+                                tabId
+                        );
+                    }
+                );
+
+            document
+                .querySelectorAll(
+                    ".tabContent"
+                )
+                .forEach(
+                    content => {
+                        content.classList.toggle(
+                            "active",
+                            content.id ===
+                                tabId
+                        );
+                    }
+                );
+
+            if (
+                tabId ===
+                "historyTab"
+            ) {
+                renderHistory();
+            }
+
+            if (
+                tabId ===
+                "logsTab"
+            ) {
+                renderLogs();
+            }
         }
 
         function updateProbabilityModeText() {
@@ -1227,9 +3182,42 @@
                 feb29SameChance
                     ? "All 366 dates have the same chance."
                     : "February 29 is 4× rarer.";
+
+            updateSpecificDateChoice();
         }
 
-        function combination(n, k) {
+        function updateSpecificDateChoice() {
+            const choiceGroup =
+                document.getElementById(
+                    "specificDateChoiceGroup"
+                );
+
+            const fixedDate =
+                document.getElementById(
+                    "specificDateFixed"
+                );
+
+            if (
+                feb29SameChance
+            ) {
+                choiceGroup.style.display =
+                    "none";
+
+                fixedDate.style.display =
+                    "block";
+            } else {
+                choiceGroup.style.display =
+                    "block";
+
+                fixedDate.style.display =
+                    "none";
+            }
+        }
+
+        function combination(
+            n,
+            k
+        ) {
             if (
                 k < 0 ||
                 k > n
@@ -1274,28 +3262,17 @@
                     ).value
                 );
 
-            const month =
-                Number(
-                    document.getElementById(
-                        "specificMonth"
-                    ).value
-                );
-
-            const day =
-                Number(
-                    document.getElementById(
-                        "specificDay"
-                    ).value
-                );
-
             if (
-                !Number.isInteger(clicks) ||
+                !Number.isInteger(
+                    clicks
+                ) ||
                 !Number.isInteger(
                     appearances
                 ) ||
                 clicks < 0 ||
                 appearances < 0 ||
-                appearances > clicks
+                appearances >
+                    clicks
             ) {
                 showResult(
                     "specificResult",
@@ -1310,14 +3287,24 @@
             if (
                 feb29SameChance
             ) {
-                p = 1 / 366;
-            } else if (
-                month === 1 &&
-                day === 29
-            ) {
-                p = 1 / 1461;
+                p =
+                    1 / 366;
             } else {
-                p = 4 / 1461;
+                const selectedDate =
+                    document.getElementById(
+                        "specificDateChoice"
+                    ).value;
+
+                if (
+                    selectedDate ===
+                    "feb29"
+                ) {
+                    p =
+                        1 / 1461;
+                } else {
+                    p =
+                        4 / 1461;
+                }
             }
 
             const probability =
@@ -1331,7 +3318,8 @@
                 ) *
                 Math.pow(
                     1 - p,
-                    clicks - appearances
+                    clicks -
+                        appearances
                 );
 
             displayProbability(
@@ -1341,7 +3329,8 @@
                     appearances +
                     " time" +
                     (
-                        appearances === 1
+                        appearances ===
+                        1
                             ? ""
                             : "s"
                     )
@@ -1369,7 +3358,8 @@
 
                 const maxJ =
                     Math.min(
-                        maxCount - 1,
+                        maxCount -
+                            1,
                         s
                     );
 
@@ -1378,18 +3368,28 @@
                     j <= maxJ;
                     j++
                 ) {
-                    if (j > 0) {
+                    if (
+                        j > 0
+                    ) {
                         factor *=
-                            ((s - j + 1) / j) *
+                            (
+                                (s -
+                                    j +
+                                    1) /
+                                j
+                            ) *
                             p;
                     }
 
                     total +=
-                        polynomial[s - j] *
+                        polynomial[
+                            s - j
+                        ] *
                         factor;
                 }
 
-                next[s] = total;
+                next[s] =
+                    total;
             }
 
             return next;
@@ -1411,12 +3411,15 @@
                 );
 
             if (
-                !Number.isInteger(clicks) ||
+                !Number.isInteger(
+                    clicks
+                ) ||
                 !Number.isInteger(
                     appearances
                 ) ||
                 clicks < 0 ||
-                appearances < 1
+                appearances <
+                    1
             ) {
                 showResult(
                     "anyResult",
@@ -1441,7 +3444,8 @@
             }
 
             if (
-                appearances > clicks
+                appearances >
+                clicks
             ) {
                 displayProbability(
                     "anyResult",
@@ -1455,7 +3459,8 @@
             }
 
             if (
-                appearances === 1
+                appearances ===
+                1
             ) {
                 displayProbability(
                     "anyResult",
@@ -1476,7 +3481,8 @@
             if (
                 feb29SameChance
             ) {
-                const p = 1 / 366;
+                const p =
+                    1 / 366;
 
                 for (
                     let i = 0;
@@ -1522,7 +3528,9 @@
             }
 
             let noDateReachesK =
-                polynomial[clicks];
+                polynomial[
+                    clicks
+                ];
 
             if (
                 !Number.isFinite(
@@ -1565,7 +3573,8 @@
                 );
 
             const percentage =
-                probability * 100;
+                probability *
+                100;
 
             let oneIn = "";
 
@@ -1574,14 +3583,17 @@
                 probability < 1
             ) {
                 const value =
-                    1 / probability;
+                    1 /
+                    probability;
 
                 if (
                     value < 1000000000
                 ) {
                     oneIn =
                         "<br>≈ 1 in " +
-                        formatNumber(value);
+                        formatNumber(
+                            value
+                        );
                 } else {
                     oneIn =
                         "<br>≈ 1 in " +
@@ -1633,7 +3645,8 @@
             }
 
             if (
-                value >= 99.999999
+                value >=
+                99.999999
             ) {
                 return "≈100%";
             }
@@ -1642,7 +3655,9 @@
                 value >= 1
             ) {
                 return (
-                    value.toFixed(4) +
+                    value.toFixed(
+                        4
+                    ) +
                     "%"
                 );
             }
@@ -1651,7 +3666,9 @@
                 value >= 0.01
             ) {
                 return (
-                    value.toFixed(6) +
+                    value.toFixed(
+                        6
+                    ) +
                     "%"
                 );
             }
@@ -1660,7 +3677,9 @@
                 value >= 0.000001
             ) {
                 return (
-                    value.toFixed(8) +
+                    value.toFixed(
+                        8
+                    ) +
                     "%"
                 );
             }
@@ -1689,32 +3708,1361 @@
             ).toLocaleString();
         }
 
-        function resetCounter() {
-            clickCount = 0;
+        /* HISTORY */
 
-            document.getElementById(
-                "counter"
-            ).textContent = "0";
+        function sortHistorySaves() {
+            historySaves.sort(
+                (a, b) => {
+                    if (
+                        Boolean(
+                            b.pinned
+                        ) !==
+                        Boolean(
+                            a.pinned
+                        )
+                    ) {
+                        return b.pinned
+                            ? 1
+                            : -1;
+                    }
+
+                    return (
+                        (
+                            b.updatedAt ||
+                            b.timestamp
+                        ) -
+                        (
+                            a.updatedAt ||
+                            a.timestamp
+                        )
+                    );
+                }
+            );
+        }
+
+        function renderHistory() {
+            sortHistorySaves();
+
+            const historyList =
+                document.getElementById(
+                    "historyList"
+                );
+
+            const historyCount =
+                document.getElementById(
+                    "historyCount"
+                );
+
+            historyCount.textContent =
+                historySaves.length +
+                (
+                    historySaves.length ===
+                    1
+                        ? " save"
+                        : " saves"
+                );
+
+            historyList.innerHTML =
+                "";
+
+            if (
+                historySaves.length ===
+                0
+            ) {
+                const empty =
+                    document.createElement(
+                        "div"
+                    );
+
+                empty.className =
+                    "emptyHistory";
+
+                empty.innerHTML =
+                    '<div class="emptyHistoryTitle">No saves yet</div>' +
+                    '<div class="emptyHistoryText">' +
+                    "Generate some dates, then save the run by resetting, switching saves, or leaving the page." +
+                    "</div>";
+
+                historyList.appendChild(
+                    empty
+                );
+
+                updateSelectionButtons();
+
+                return;
+            }
+
+            historySaves.forEach(
+                save => {
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "saveCard";
+
+                    if (
+                        save.pinned
+                    ) {
+                        card.classList.add(
+                            "pinned"
+                        );
+                    }
+
+                    if (
+                        save.id ===
+                        currentSaveId
+                    ) {
+                        card.classList.add(
+                            "current"
+                        );
+                    }
+
+                    const header =
+                        document.createElement(
+                            "div"
+                        );
+
+                    header.className =
+                        "saveHeader";
+
+                    const checkboxWrap =
+                        document.createElement(
+                            "div"
+                        );
+
+                    checkboxWrap.className =
+                        "saveCheckboxWrap";
+
+                    const checkbox =
+                        document.createElement(
+                            "input"
+                        );
+
+                    checkbox.type =
+                        "checkbox";
+
+                    checkbox.className =
+                        "saveCheckbox";
+
+                    checkbox.checked =
+                        selectedSaveIds.has(
+                            save.id
+                        );
+
+                    checkbox.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+
+                            if (
+                                checkbox.checked
+                            ) {
+                                selectedSaveIds.add(
+                                    save.id
+                                );
+                            } else {
+                                selectedSaveIds.delete(
+                                    save.id
+                                );
+                            }
+
+                            updateSelectionButtons();
+                        }
+                    );
+
+                    checkboxWrap.appendChild(
+                        checkbox
+                    );
+
+                    const main =
+                        document.createElement(
+                            "div"
+                        );
+
+                    main.className =
+                        "saveMain";
+
+                    const titleRow =
+                        document.createElement(
+                            "div"
+                        );
+
+                    titleRow.className =
+                        "saveTitleRow";
+
+                    const title =
+                        document.createElement(
+                            "div"
+                        );
+
+                    title.className =
+                        "saveTitle";
+
+                    title.textContent =
+                        save.name ||
+                        "Unnamed Save";
+
+                    titleRow.appendChild(
+                        title
+                    );
+
+                    if (
+                        save.id ===
+                        currentSaveId
+                    ) {
+                        const currentBadge =
+                            document.createElement(
+                                "span"
+                            );
+
+                        currentBadge.className =
+                            "saveBadge";
+
+                        currentBadge.textContent =
+                            "CURRENT";
+
+                        titleRow.appendChild(
+                            currentBadge
+                        );
+                    }
+
+                    if (
+                        save.pinned
+                    ) {
+                        const pinIndicator =
+                            document.createElement(
+                                "span"
+                            );
+
+                        pinIndicator.className =
+                            "pinIndicator";
+
+                        pinIndicator.textContent =
+                            "★";
+
+                        titleRow.appendChild(
+                            pinIndicator
+                        );
+                    }
+
+                    const meta =
+                        document.createElement(
+                            "div"
+                        );
+
+                    meta.className =
+                        "saveMeta";
+
+                    meta.textContent =
+                        save.clickCount +
+                        " clicks • updated " +
+                        formatSaveDate(
+                            save.updatedAt ||
+                                save.timestamp
+                        ) +
+                        " • " +
+                        (
+                            save.versions?.length ||
+                            0
+                        ) +
+                        " old " +
+                        (
+                            save.versions?.length ===
+                            1
+                                ? "version"
+                                : "versions"
+                        );
+
+                    main.appendChild(
+                        titleRow
+                    );
+
+                    main.appendChild(
+                        meta
+                    );
+
+                    const actions =
+                        document.createElement(
+                            "div"
+                        );
+
+                    actions.className =
+                        "saveActions";
+
+                    const openButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    openButton.className =
+                        "saveIconButton";
+
+                    openButton.textContent =
+                        "↗";
+
+                    openButton.title =
+                        "Open save";
+
+                    openButton.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+                            openSave(
+                                save.id
+                            );
+                        }
+                    );
+
+                    const renameButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    renameButton.className =
+                        "saveIconButton";
+
+                    renameButton.textContent =
+                        "✎";
+
+                    renameButton.title =
+                        "Rename save";
+
+                    renameButton.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+
+                            openNameModal(
+                                "rename",
+                                save.id
+                            );
+                        }
+                    );
+
+                    const pinButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    pinButton.className =
+                        "saveIconButton pin";
+
+                    if (
+                        save.pinned
+                    ) {
+                        pinButton.classList.add(
+                            "active"
+                        );
+                    }
+
+                    pinButton.textContent =
+                        save.pinned
+                            ? "★"
+                            : "☆";
+
+                    pinButton.title =
+                        save.pinned
+                            ? "Unpin save"
+                            : "Pin save";
+
+                    pinButton.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+
+                            save.pinned =
+                                !save.pinned;
+
+                            saveHistory();
+                            renderHistory();
+                        }
+                    );
+
+                    const expandButton =
+                        document.createElement(
+                            "button"
+                        );
+
+                    expandButton.className =
+                        "saveIconButton saveExpandButton";
+
+                    expandButton.textContent =
+                        "⌄";
+
+                    expandButton.title =
+                        "Show old versions";
+
+                    expandButton.addEventListener(
+                        "click",
+                        event => {
+                            event.stopPropagation();
+
+                            card.classList.toggle(
+                                "expanded"
+                            );
+                        }
+                    );
+
+                    actions.appendChild(
+                        openButton
+                    );
+
+                    actions.appendChild(
+                        renameButton
+                    );
+
+                    actions.appendChild(
+                        pinButton
+                    );
+
+                    actions.appendChild(
+                        expandButton
+                    );
+
+                    header.appendChild(
+                        checkboxWrap
+                    );
+
+                    header.appendChild(
+                        main
+                    );
+
+                    header.appendChild(
+                        actions
+                    );
+
+                    const details =
+                        document.createElement(
+                            "div"
+                        );
+
+                    details.className =
+                        "saveDetails";
+
+                    const createdLine =
+                        document.createElement(
+                            "div"
+                        );
+
+                    createdLine.className =
+                        "saveDetailLine";
+
+                    createdLine.innerHTML =
+                        "<strong>Created:</strong> " +
+                        formatSaveDate(
+                            save.timestamp
+                        );
+
+                    details.appendChild(
+                        createdLine
+                    );
+
+                    const updatedLine =
+                        document.createElement(
+                            "div"
+                        );
+
+                    updatedLine.className =
+                        "saveDetailLine";
+
+                    updatedLine.innerHTML =
+                        "<strong>Last updated:</strong> " +
+                        formatSaveDate(
+                            save.updatedAt ||
+                                save.timestamp
+                        );
+
+                    details.appendChild(
+                        updatedLine
+                    );
+
+                    const clicksLine =
+                        document.createElement(
+                            "div"
+                        );
+
+                    clicksLine.className =
+                        "saveDetailLine";
+
+                    clicksLine.innerHTML =
+                        "<strong>Clicks:</strong> " +
+                        save.clickCount;
+
+                    details.appendChild(
+                        clicksLine
+                    );
+
+                    const probabilityLine =
+                        document.createElement(
+                            "div"
+                        );
+
+                    probabilityLine.className =
+                        "saveDetailLine";
+
+                    probabilityLine.innerHTML =
+                        "<strong>February 29:</strong> " +
+                        (
+                            save.feb29SameChance
+                                ? "Equal chance"
+                                : "4× rarer"
+                        );
+
+                    details.appendChild(
+                        probabilityLine
+                    );
+
+                    const logsLine =
+                        document.createElement(
+                            "div"
+                        );
+
+                    logsLine.className =
+                        "saveDetailLine";
+
+                    logsLine.innerHTML =
+                        "<strong>Logs:</strong> " +
+                        (
+                            save.logs?.length ||
+                            0
+                        );
+
+                    details.appendChild(
+                        logsLine
+                    );
+
+                    const versions =
+                        save.versions ||
+                        [];
+
+                    const versionHeading =
+                        document.createElement(
+                            "div"
+                        );
+
+                    versionHeading.className =
+                        "versionHeading";
+
+                    versionHeading.textContent =
+                        "Old Versions (" +
+                        versions.length +
+                        ")";
+
+                    details.appendChild(
+                        versionHeading
+                    );
+
+                    const versionList =
+                        document.createElement(
+                            "div"
+                        );
+
+                    versionList.className =
+                        "versionList";
+
+                    if (
+                        versions.length ===
+                        0
+                    ) {
+                        const none =
+                            document.createElement(
+                                "div"
+                            );
+
+                        none.className =
+                            "noVersions";
+
+                        none.textContent =
+                            "No previous versions yet.";
+
+                        versionList.appendChild(
+                            none
+                        );
+                    } else {
+                        versions
+                            .slice()
+                            .reverse()
+                            .forEach(
+                                (
+                                    version,
+                                    reverseIndex
+                                ) => {
+                                    const versionCard =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionCard.className =
+                                        "versionCard";
+
+                                    const versionTop =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionTop.className =
+                                        "versionTop";
+
+                                    const versionNumber =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionNumber.className =
+                                        "versionNumber";
+
+                                    versionNumber.textContent =
+                                        "Version " +
+                                        (
+                                            versions.length -
+                                            reverseIndex
+                                        );
+
+                                    const versionDate =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionDate.className =
+                                        "versionDate";
+
+                                    versionDate.textContent =
+                                        formatSaveDate(
+                                            version.timestamp
+                                        );
+
+                                    versionTop.appendChild(
+                                        versionNumber
+                                    );
+
+                                    versionTop.appendChild(
+                                        versionDate
+                                    );
+
+                                    const versionMeta =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionMeta.className =
+                                        "versionMeta";
+
+                                    versionMeta.textContent =
+                                        version.clickCount +
+                                        " clicks" +
+                                        (
+                                            version.currentDate
+                                                ? " • " +
+                                                  version.currentDate
+                                                : ""
+                                        ) +
+                                        " • " +
+                                        (
+                                            version.logs?.length ||
+                                            0
+                                        ) +
+                                        " logs";
+
+                                    const versionReason =
+                                        document.createElement(
+                                            "div"
+                                        );
+
+                                    versionReason.className =
+                                        "versionReason";
+
+                                    versionReason.textContent =
+                                        version.reason ||
+                                        "Saved version";
+
+                                    versionCard.appendChild(
+                                        versionTop
+                                    );
+
+                                    versionCard.appendChild(
+                                        versionMeta
+                                    );
+
+                                    versionCard.appendChild(
+                                        versionReason
+                                    );
+
+                                    versionList.appendChild(
+                                        versionCard
+                                    );
+                                }
+                            );
+                    }
+
+                    details.appendChild(
+                        versionList
+                    );
+
+                    card.appendChild(
+                        header
+                    );
+
+                    card.appendChild(
+                        details
+                    );
+
+                    historyList.appendChild(
+                        card
+                    );
+                }
+            );
+
+            updateSelectionButtons();
+        }
+
+        function updateSelectionButtons() {
+            const deleteModeButton =
+                document.getElementById(
+                    "deleteModeButton"
+                );
+
+            const cancelDeleteButton =
+                document.getElementById(
+                    "cancelDeleteButton"
+                );
+
+            const deleteSelectedButton =
+                document.getElementById(
+                    "deleteSelectedButton"
+                );
+
+            const historyList =
+                document.getElementById(
+                    "historyList"
+                );
+
+            historyList.classList.toggle(
+                "selectionMode",
+                selectionMode
+            );
+
+            if (
+                selectionMode
+            ) {
+                deleteModeButton.style.display =
+                    "none";
+
+                cancelDeleteButton.style.display =
+                    "inline-block";
+
+                deleteSelectedButton.style.display =
+                    "inline-block";
+
+                deleteSelectedButton.textContent =
+                    selectedSaveIds.size >
+                    0
+                        ? "Delete Selected (" +
+                          selectedSaveIds.size +
+                          ")"
+                        : "Delete Selected";
+            } else {
+                deleteModeButton.style.display =
+                    "inline-block";
+
+                cancelDeleteButton.style.display =
+                    "none";
+
+                deleteSelectedButton.style.display =
+                    "none";
+            }
+        }
+
+        function enterSelectionMode() {
+            selectionMode = true;
+            selectedSaveIds.clear();
+            renderHistory();
+        }
+
+        function exitSelectionMode() {
+            selectionMode = false;
+            selectedSaveIds.clear();
+            renderHistory();
+        }
+
+        /* OPEN SAVE */
+
+        function openSave(
+            saveId
+        ) {
+            const targetSave =
+                historySaves.find(
+                    save =>
+                        save.id ===
+                        saveId
+                );
+
+            if (
+                !targetSave
+            ) {
+                return;
+            }
+
+            /*
+             * Before switching away from the current run,
+             * save whatever state the user was currently on.
+             */
+            if (
+                clickCount > 0 &&
+                currentSaveId !==
+                    saveId
+            ) {
+                ensureCurrentRunSaved(
+                    "Switched to another save"
+                );
+            }
+
+            /*
+             * Refresh the target reference because
+             * saving the current run could have sorted
+             * or changed the history array.
+             */
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            if (
+                !save
+            ) {
+                return;
+            }
+
+            clickCount =
+                save.clickCount;
+
+            currentDate =
+                save.currentDate ||
+                "";
+
+            currentSaveId =
+                save.id;
+
+            currentSaveName =
+                save.name ||
+                "Unnamed Save";
+
+            sessionLogs =
+                cloneObject(
+                    save.logs ||
+                        []
+                );
 
             for (
                 const date in dateCounts
             ) {
-                delete dateCounts[date];
+                delete dateCounts[
+                    date
+                ];
             }
 
             for (
                 const date in dateHistory
             ) {
-                delete dateHistory[date];
+                delete dateHistory[
+                    date
+                ];
             }
+
+            Object.assign(
+                dateCounts,
+                cloneObject(
+                    save.dateCounts
+                )
+            );
+
+            Object.assign(
+                dateHistory,
+                cloneObject(
+                    save.dateHistory
+                )
+            );
+
+            feb29SameChance =
+                save.feb29SameChance;
+
+            document.getElementById(
+                "counter"
+            ).textContent =
+                clickCount;
 
             document.getElementById(
                 "date"
             ).textContent =
+                currentDate ||
                 "Click the button!";
 
+            document.getElementById(
+                "equalFeb29"
+            ).checked =
+                feb29SameChance;
+
+            updateProbabilityModeText();
             updateDuplicates();
+            renderLogs();
+            renderHistory();
+
+            closeProbability();
         }
+
+        /* LOGS */
+
+        function renderLogs() {
+            const logsList =
+                document.getElementById(
+                    "logsList"
+                );
+
+            const logsSaveName =
+                document.getElementById(
+                    "logsSaveName"
+                );
+
+            const logsSaveMeta =
+                document.getElementById(
+                    "logsSaveMeta"
+                );
+
+            logsSaveName.textContent =
+                currentSaveName;
+
+            logsSaveMeta.textContent =
+                sessionLogs.length +
+                (
+                    sessionLogs.length ===
+                    1
+                        ? " log entry"
+                        : " log entries"
+                ) +
+                " • " +
+                clickCount +
+                " clicks";
+
+            logsList.innerHTML =
+                "";
+
+            if (
+                sessionLogs.length ===
+                0
+            ) {
+                const empty =
+                    document.createElement(
+                        "div"
+                    );
+
+                empty.className =
+                    "emptyLogs";
+
+                empty.textContent =
+                    "Nothing has happened yet in this run.";
+
+                logsList.appendChild(
+                    empty
+                );
+
+                return;
+            }
+
+            sessionLogs
+                .slice()
+                .reverse()
+                .forEach(
+                    log => {
+                        const item =
+                            document.createElement(
+                                "div"
+                            );
+
+                        item.className =
+                            "logItem";
+
+                        const text =
+                            document.createElement(
+                                "div"
+                            );
+
+                        text.className =
+                            "logText";
+
+                        text.textContent =
+                            log.text;
+
+                        const time =
+                            document.createElement(
+                                "div"
+                            );
+
+                        time.className =
+                            "logTime";
+
+                        time.textContent =
+                            formatLogTime(
+                                log.timestamp
+                            );
+
+                        item.appendChild(
+                            text
+                        );
+
+                        item.appendChild(
+                            time
+                        );
+
+                        logsList.appendChild(
+                            item
+                        );
+                    }
+                );
+        }
+
+        /* NAME MODALS */
+
+        function openNameModal(
+            mode,
+            saveId = null
+        ) {
+            nameModalMode =
+                mode;
+
+            nameModalSaveId =
+                saveId;
+
+            const title =
+                document.getElementById(
+                    "nameModalTitle"
+                );
+
+            const description =
+                document.getElementById(
+                    "nameModalDescription"
+                );
+
+            const input =
+                document.getElementById(
+                    "saveNameInput"
+                );
+
+            const noSaveButton =
+                document.getElementById(
+                    "nameNoSave"
+                );
+
+            const confirmButton =
+                document.getElementById(
+                    "nameConfirm"
+                );
+
+            if (
+                mode ===
+                "rename"
+            ) {
+                const save =
+                    historySaves.find(
+                        item =>
+                            item.id ===
+                            saveId
+                    );
+
+                title.textContent =
+                    "Rename save";
+
+                description.textContent =
+                    "Change the name of this saved run.";
+
+                input.value =
+                    save?.name ||
+                    "";
+
+                input.placeholder =
+                    "Save name";
+
+                noSaveButton.style.display =
+                    "none";
+
+                confirmButton.textContent =
+                    "Save Name";
+            } else {
+                title.textContent =
+                    "Name your save";
+
+                description.textContent =
+                    "Give this run a name so it is easy to find later.";
+
+                input.value =
+                    "";
+
+                input.placeholder =
+                    "Example: My 3,000 Click Run";
+
+                noSaveButton.style.display =
+                    "inline-block";
+
+                confirmButton.textContent =
+                    "Save & Reset";
+            }
+
+            document.getElementById(
+                "namePanel"
+            ).classList.add(
+                "open"
+            );
+
+            setTimeout(
+                () => {
+                    input.focus();
+                },
+                50
+            );
+        }
+
+        function closeNameModal() {
+            nameModalMode =
+                null;
+
+            nameModalSaveId =
+                null;
+
+            document.getElementById(
+                "namePanel"
+            ).classList.remove(
+                "open"
+            );
+        }
+
+        function confirmNameModal() {
+            const input =
+                document.getElementById(
+                    "saveNameInput"
+                );
+
+            const enteredName =
+                input.value.trim();
+
+            if (
+                nameModalMode ===
+                "rename"
+            ) {
+                const save =
+                    historySaves.find(
+                        item =>
+                            item.id ===
+                            nameModalSaveId
+                    );
+
+                if (
+                    save
+                ) {
+                    save.name =
+                        enteredName ||
+                        getDefaultSaveName();
+
+                    saveHistory();
+                    renderHistory();
+
+                    if (
+                        currentSaveId ===
+                        save.id
+                    ) {
+                        currentSaveName =
+                            save.name;
+
+                        renderLogs();
+                    }
+                }
+
+                closeNameModal();
+
+                return;
+            }
+
+            const name =
+                enteredName ||
+                getDefaultSaveName();
+
+            createSaveFromCurrentRun(
+                name
+            );
+
+            closeNameModal();
+
+            clearCurrentRun();
+        }
+
+        function resetWithoutSaving() {
+            clearCurrentRun();
+        }
+
+        function handleReset() {
+            if (
+                !autoSaveOnReset ||
+                clickCount <= 0
+            ) {
+                resetWithoutSaving();
+                return;
+            }
+
+            if (
+                isCurrentRunDuplicate()
+            ) {
+                resetWithoutSaving();
+                return;
+            }
+
+            if (
+                customNamesOn
+            ) {
+                openNameModal(
+                    "new"
+                );
+
+                return;
+            }
+
+            ensureCurrentRunSaved(
+                "Reset"
+            );
+
+            clearCurrentRun();
+        }
+
+        function isCurrentRunDuplicate() {
+            if (
+                clickCount <= 0
+            ) {
+                return false;
+            }
+
+            const signature =
+                getCurrentSignature();
+
+            return Boolean(
+                findDuplicateSave(
+                    signature,
+                    currentSaveId
+                )
+            ) ||
+                (
+                    currentSaveId &&
+                    historySaves.some(
+                        save =>
+                            save.id ===
+                                currentSaveId &&
+                            getSaveSignature(
+                                save
+                            ) ===
+                                signature
+                    )
+                );
+        }
+
+        /*
+         * Called when the document is being left.
+         * This intentionally ignores the Reset auto-save
+         * setting: leaving/refreshing always saves.
+         */
+        function persistBeforeLeaving() {
+            if (
+                clickCount <= 0
+            ) {
+                return;
+            }
+
+            ensureCurrentRunSaved(
+                "Page left or refreshed"
+            );
+        }
+
+        window.addEventListener(
+            "pagehide",
+            persistBeforeLeaving
+        );
+
+        window.addEventListener(
+            "beforeunload",
+            persistBeforeLeaving
+        );
+
+        /* DELETE */
+
+        function openDeleteWarning() {
+            if (
+                selectedSaveIds.size ===
+                0
+            ) {
+                return;
+            }
+
+            const count =
+                selectedSaveIds.size;
+
+            document.getElementById(
+                "warningText"
+            ).textContent =
+                "You are about to permanently delete " +
+                count +
+                (
+                    count === 1
+                        ? " save."
+                        : " saves."
+                ) +
+                " This cannot be undone.";
+
+            document.getElementById(
+                "warningPanel"
+            ).classList.add(
+                "open"
+            );
+        }
+
+        function closeDeleteWarning() {
+            document.getElementById(
+                "warningPanel"
+            ).classList.remove(
+                "open"
+            );
+        }
+
+        function deleteSelectedSaves() {
+            historySaves =
+                historySaves.filter(
+                    save =>
+                        !selectedSaveIds.has(
+                            save.id
+                        )
+                );
+
+            if (
+                selectedSaveIds.has(
+                    currentSaveId
+                )
+            ) {
+                currentSaveId = null;
+                currentSaveName =
+                    "Current Session";
+            }
+
+            saveHistory();
+
+            closeDeleteWarning();
+
+            selectionMode =
+                false;
+
+            selectedSaveIds.clear();
+
+            renderHistory();
+            renderLogs();
+        }
+
+        /* EVENTS */
 
         document.getElementById(
             "infoButton"
@@ -1741,7 +5089,7 @@
             "resetButton"
         ).addEventListener(
             "click",
-            resetCounter
+            handleReset
         );
 
         document.getElementById(
@@ -1766,13 +5114,6 @@
         );
 
         document.getElementById(
-            "specificMonth"
-        ).addEventListener(
-            "change",
-            updateDaySelector
-        );
-
-        document.getElementById(
             "equalFeb29"
         ).addEventListener(
             "change",
@@ -1781,6 +5122,141 @@
                     this.checked;
 
                 updateProbabilityModeText();
+
+                if (
+                    clickCount > 0
+                ) {
+                    addLog(
+                        "February 29 is now " +
+                            (
+                                feb29SameChance
+                                    ? "equal to every other date."
+                                    : "4× rarer than other dates."
+                            )
+                    );
+                }
+            }
+        );
+
+        document.getElementById(
+            "deleteModeButton"
+        ).addEventListener(
+            "click",
+            enterSelectionMode
+        );
+
+        document.getElementById(
+            "cancelDeleteButton"
+        ).addEventListener(
+            "click",
+            exitSelectionMode
+        );
+
+        document.getElementById(
+            "deleteSelectedButton"
+        ).addEventListener(
+            "click",
+            openDeleteWarning
+        );
+
+        document.getElementById(
+            "warningCancel"
+        ).addEventListener(
+            "click",
+            closeDeleteWarning
+        );
+
+        document.getElementById(
+            "warningConfirm"
+        ).addEventListener(
+            "click",
+            deleteSelectedSaves
+        );
+
+        document.getElementById(
+            "autoSaveToggle"
+        ).addEventListener(
+            "change",
+            function() {
+                autoSaveOnReset =
+                    this.checked;
+
+                saveSettings();
+            }
+        );
+
+        document.getElementById(
+            "customNamesToggle"
+        ).addEventListener(
+            "change",
+            function() {
+                customNamesOn =
+                    this.checked;
+
+                saveSettings();
+            }
+        );
+
+        document.getElementById(
+            "nameCancel"
+        ).addEventListener(
+            "click",
+            closeNameModal
+        );
+
+        document.getElementById(
+            "nameNoSave"
+        ).addEventListener(
+            "click",
+            function() {
+                closeNameModal();
+                resetWithoutSaving();
+            }
+        );
+
+        document.getElementById(
+            "nameConfirm"
+        ).addEventListener(
+            "click",
+            confirmNameModal
+        );
+
+        document
+            .querySelectorAll(
+                ".tabButton"
+            )
+            .forEach(
+                button => {
+                    button.addEventListener(
+                        "click",
+                        () => {
+                            switchTab(
+                                button.dataset
+                                    .tab
+                            );
+                        }
+                    );
+                }
+            );
+
+        document.getElementById(
+            "saveNameInput"
+        ).addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+                    confirmNameModal();
+                }
+
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+                    closeNameModal();
+                }
             }
         );
 
@@ -1797,8 +5273,41 @@
             }
         );
 
-        populateMonthSelector();
+        document.getElementById(
+            "namePanel"
+        ).addEventListener(
+            "click",
+            function(event) {
+                if (
+                    event.target === this
+                ) {
+                    closeNameModal();
+                }
+            }
+        );
+
+        document.getElementById(
+            "warningPanel"
+        ).addEventListener(
+            "click",
+            function(event) {
+                if (
+                    event.target === this
+                ) {
+                    closeDeleteWarning();
+                }
+            }
+        );
+
+        /* STARTUP */
+
+        loadHistory();
+        loadSettings();
+
         updateProbabilityModeText();
+        updateDuplicates();
+        renderHistory();
+        renderLogs();
     </script>
 
 </body>

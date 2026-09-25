@@ -475,6 +475,10 @@
             gap: 10px;
         }
 
+        .inputRow.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
         .inputGroup {
             margin-bottom: 12px;
         }
@@ -1279,7 +1283,8 @@
                 padding: 9px 4px;
             }
 
-            .inputRow {
+            .inputRow,
+            .inputRow.three {
                 grid-template-columns: 1fr;
                 gap: 0;
             }
@@ -1451,7 +1456,28 @@
                     </label>
 
                     <div class="rarityDescription">
-                        On: equal • Off: 4× rarer
+                        On: all 366 dates have equal chance • Off: normal setting
+                    </div>
+
+                </div>
+
+                <div class="rarityOption">
+
+                    <label class="rarityLabel">
+
+                        <input
+                            type="checkbox"
+                            id="removeFeb29"
+                        >
+
+                        <span class="rarityText">
+                            Remove February 29
+                        </span>
+
+                    </label>
+
+                    <div class="rarityDescription">
+                        On: 365 dates only • Off: February 29 included
                     </div>
 
                 </div>
@@ -1548,10 +1574,10 @@
                     <h3>Any Date</h3>
 
                     <div class="calculatorDescription">
-                        Chance that at least one date appears X or more times in Z clicks.
+                        Chance that at least Y different dates each appear X or more times in Z clicks.
                     </div>
 
-                    <div class="inputRow">
+                    <div class="inputRow three">
 
                         <div class="inputGroup">
 
@@ -1575,6 +1601,19 @@
                                 type="number"
                                 min="1"
                                 value="2"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Pairs</label>
+
+                            <input
+                                id="anyPairs"
+                                type="number"
+                                min="1"
+                                value="1"
                             >
 
                         </div>
@@ -1858,7 +1897,9 @@
 <script>
     let clickCount = 0;
     let sortMode = "appearances";
+
     let feb29SameChance = false;
+    let removeFeb29 = false;
 
     let currentDate = "";
     let currentSaveId = null;
@@ -1896,15 +1937,11 @@
 
     /*
      * HIGH-CLICK OPTIMIZATION
-     *
-     * The original version rebuilt the entire duplicate list
-     * and the entire random ticket pool on every click.
-     *
-     * These caches let the generator update only what changed.
      */
 
     const equalDatePool = [];
     const rareDatePool = [];
+    const noFeb29DatePool = [];
 
     const duplicateCardCache = new Map();
 
@@ -1913,6 +1950,12 @@
     let leaderFirstAppearance = Infinity;
 
     let logRenderQueued = false;
+
+    const probabilityCalculationCache =
+        new Map();
+
+    const logFactorialCache =
+        new Map();
 
     const monthNames = [
         "January",
@@ -1945,19 +1988,21 @@
     ];
 
     /*
-     * Build the probability pools ONCE instead of rebuilding them
-     * every click.
+     * DATE POOLS
      *
-     * Equal mode:
-     *     366 entries
-     *
-     * Rare February 29 mode:
+     * rareDatePool:
      *     365 normal dates × 4 + February 29
-     *     = 1461 entries
+     *
+     * equalDatePool:
+     *     366 equal dates
+     *
+     * noFeb29DatePool:
+     *     365 equal dates
      */
     function buildDatePools() {
         equalDatePool.length = 0;
         rareDatePool.length = 0;
+        noFeb29DatePool.length = 0;
 
         for (
             let month = 0;
@@ -1984,6 +2029,10 @@
                 ) {
                     continue;
                 }
+
+                noFeb29DatePool.push(
+                    formatted
+                );
 
                 for (
                     let i = 0;
@@ -2044,10 +2093,6 @@
         }
     }
 
-    /*
-     * structuredClone is considerably better for large runs
-     * when supported. JSON cloning remains as a fallback.
-     */
     function cloneObject(
         object
     ) {
@@ -2060,7 +2105,7 @@
                     object
                 );
             } catch (error) {
-                // Fall through to JSON cloning.
+                // Fallback below.
             }
         }
 
@@ -2148,6 +2193,113 @@
         );
     }
 
+    function getProbabilityMode() {
+        if (
+            removeFeb29
+        ) {
+            return "remove";
+        }
+
+        if (
+            feb29SameChance
+        ) {
+            return "equal";
+        }
+
+        return "rare";
+    }
+
+    function getProbabilityModeText() {
+        const mode =
+            getProbabilityMode();
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            return (
+                "February 29 is removed; the other 365 dates have equal chance."
+            );
+        }
+
+        if (
+            mode ===
+            "equal"
+        ) {
+            return (
+                "All 366 dates have the same chance."
+            );
+        }
+
+        return (
+            "February 29 is 4× rarer."
+        );
+    }
+
+    function setProbabilityMode(
+        mode,
+        shouldLog = true
+    ) {
+        const oldMode =
+            getProbabilityMode();
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            removeFeb29 = true;
+            feb29SameChance = false;
+        } else if (
+            mode ===
+            "equal"
+        ) {
+            removeFeb29 = false;
+            feb29SameChance = true;
+        } else {
+            removeFeb29 = false;
+            feb29SameChance = false;
+        }
+
+        document.getElementById(
+            "equalFeb29"
+        ).checked =
+            feb29SameChance;
+
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
+
+        updateProbabilityModeText();
+
+        if (
+            shouldLog &&
+            clickCount > 0 &&
+            oldMode !==
+                mode
+        ) {
+            if (
+                mode ===
+                "remove"
+            ) {
+                addLog(
+                    "February 29 has been removed from the random dates."
+                );
+            } else if (
+                mode ===
+                "equal"
+            ) {
+                addLog(
+                    "February 29 is now equal to every other date."
+                );
+            } else {
+                addLog(
+                    "February 29 is now 4× rarer than other dates."
+                );
+            }
+        }
+    }
+
     function getSaveVersionState(
         source
     ) {
@@ -2181,6 +2333,11 @@
                     source.feb29SameChance
                 ),
 
+            removeFeb29:
+                Boolean(
+                    source.removeFeb29
+                ),
+
             logs:
                 cloneObject(
                     source.logs ||
@@ -2192,16 +2349,23 @@
     function getCurrentState() {
         return {
             clickCount,
+
             currentDate,
+
             dateCounts:
                 cloneObject(
                     dateCounts
                 ),
+
             dateHistory:
                 cloneObject(
                     dateHistory
                 ),
+
             feb29SameChance,
+
+            removeFeb29,
+
             logs:
                 cloneObject(
                     sessionLogs
@@ -2231,6 +2395,11 @@
             feb29SameChance:
                 Boolean(
                     state.feb29SameChance
+                ),
+
+            removeFeb29:
+                Boolean(
+                    state.removeFeb29
                 )
         });
     }
@@ -2249,10 +2418,6 @@
         );
     }
 
-    /*
-     * Rebuild the leader only when a run is loaded/reset.
-     * During normal clicking we update it in O(1).
-     */
     function rebuildLeaderCache() {
         leaderDate = "";
         leaderCount = 0;
@@ -2307,10 +2472,6 @@
         }
     }
 
-    /*
-     * Kept for compatibility with the rest of the app.
-     * This is only used when a full leader calculation is actually needed.
-     */
     function getLeader(
         counts
     ) {
@@ -2453,7 +2614,12 @@
                                         typeof version.reason ===
                                         "string"
                                             ? version.reason
-                                            : "Saved version"
+                                            : "Saved version",
+
+                                    removeFeb29:
+                                        Boolean(
+                                            version.removeFeb29
+                                        )
                                 })
                             );
 
@@ -2492,6 +2658,11 @@
                                 "number"
                                     ? save.updatedAt
                                     : save.timestamp,
+
+                            removeFeb29:
+                                Boolean(
+                                    save.removeFeb29
+                                ),
 
                             versions
                         };
@@ -2599,13 +2770,6 @@
             text
         });
 
-        /*
-         * Do not rebuild thousands of log DOM nodes
-         * when the Logs tab is hidden.
-         *
-         * If it is visible, at most one render occurs
-         * per animation frame.
-         */
         scheduleLogsRender();
     }
 
@@ -2713,6 +2877,9 @@
             feb29SameChance:
                 previousState.feb29SameChance,
 
+            removeFeb29:
+                previousState.removeFeb29,
+
             logs:
                 previousState.logs,
 
@@ -2815,6 +2982,9 @@
         save.feb29SameChance =
             currentState.feb29SameChance;
 
+        save.removeFeb29 =
+            currentState.removeFeb29;
+
         save.logs =
             cloneObject(
                 currentState.logs
@@ -2904,6 +3074,9 @@
 
             feb29SameChance:
                 state.feb29SameChance,
+
+            removeFeb29:
+                state.removeFeb29,
 
             logs:
                 cloneObject(
@@ -3004,19 +3177,27 @@
     }
 
     /*
-     * Optimized date generation.
-     *
-     * The random pool is already built, so each click now only
-     * does one random array lookup instead of constructing
-     * 1461 ticket entries.
+     * OPTIMIZED RANDOM DATE GENERATION
      */
     function generateDate() {
         clickCount++;
 
-        const pool =
+        let pool;
+
+        if (
+            removeFeb29
+        ) {
+            pool =
+                noFeb29DatePool;
+        } else if (
             feb29SameChance
-                ? equalDatePool
-                : rareDatePool;
+        ) {
+            pool =
+                equalDatePool;
+        } else {
+            pool =
+                rareDatePool;
+        }
 
         const formattedDate =
             pool[
@@ -3054,10 +3235,6 @@
         ).textContent =
             formattedDate;
 
-        /*
-         * Update counts directly instead of cloning
-         * the entire object.
-         */
         dateCounts[
             formattedDate
         ] =
@@ -3150,13 +3327,6 @@
             );
         }
 
-        /*
-         * O(1) leader update.
-         *
-         * A date only becomes the leader when it actually
-         * passes the previous leader. Ties preserve first
-         * appearance order exactly like before.
-         */
         if (
             newCount >
             leaderCount
@@ -3173,9 +3343,6 @@
                 ][0];
         }
 
-        /*
-         * Only update the one affected duplicate card.
-         */
         updateDuplicateAfterGeneration(
             formattedDate,
             previousCount
@@ -3377,13 +3544,6 @@
                 if (
                     expanded
                 ) {
-                    /*
-                     * Details are created lazily.
-                     *
-                     * This is a major optimization at high
-                     * click counts because collapsed cards
-                     * no longer create every appearance line.
-                     */
                     renderDateDetails(
                         date
                     );
@@ -3440,10 +3600,6 @@
                 return countDifference;
             }
 
-            /*
-             * This keeps the same effective stable order:
-             * earliest first appearance first.
-             */
             return (
                 (
                     dateHistory[a]?.[0] ??
@@ -3477,14 +3633,9 @@
             );
 
         if (
-            !entry
-        ) {
-            return;
-        }
-
-        if (
+            !entry ||
             sortMode !==
-            "appearances"
+                "appearances"
         ) {
             return;
         }
@@ -3496,12 +3647,6 @@
             dateCounts[date] ||
             0;
 
-        /*
-         * A date's count only increases by 1.
-         * Therefore it can only move UP in appearance sorting.
-         *
-         * We stop on equal counts so stable order is preserved.
-         */
         let previous =
             card.previousElementSibling;
 
@@ -3535,15 +3680,6 @@
         }
     }
 
-    /*
-     * Fast per-click duplicate update.
-     *
-     * Instead of destroying and recreating every card, this:
-     * - creates one card when a date becomes a duplicate
-     * - updates one counter when a duplicate appears again
-     * - appends one history line only when needed
-     * - moves only the affected card when sorting by appearances
-     */
     function updateDuplicateAfterGeneration(
         date,
         previousCount
@@ -3593,11 +3729,6 @@
                 entry.card
             );
 
-            /*
-             * A newly duplicated date has the newest second
-             * appearance, so chronological mode naturally puts
-             * it at the end.
-             */
             positionDuplicateCard(
                 date
             );
@@ -3608,11 +3739,8 @@
         if (
             !entry
         ) {
-            /*
-             * Safety fallback in case the DOM was rebuilt
-             * by another operation.
-             */
             updateDuplicates();
+
             entry =
                 duplicateCardCache.get(
                     date
@@ -3629,9 +3757,6 @@
             currentCount +
             " appearances";
 
-        /*
-         * If the card is expanded, add only the newest line.
-         */
         if (
             entry.card.classList.contains(
                 "expanded"
@@ -3647,13 +3772,6 @@
         );
     }
 
-    /*
-     * Full duplicate rendering is now only used when genuinely needed:
-     * - startup
-     * - reset
-     * - loading a save/version
-     * - changing sort mode
-     */
     function updateDuplicates() {
         const duplicateList =
             document.getElementById(
@@ -3865,9 +3983,7 @@
         document.getElementById(
             "probabilityModeText"
         ).textContent =
-            feb29SameChance
-                ? "All 366 dates have the same chance."
-                : "February 29 is 4× rarer.";
+            getProbabilityModeText();
 
         updateSpecificDateChoice();
     }
@@ -3884,19 +4000,20 @@
             );
 
         if (
-            feb29SameChance
+            getProbabilityMode() ===
+            "rare"
         ) {
             choiceGroup.style.display =
-                "none";
+                "block";
 
             fixedDate.style.display =
-                "block";
+                "none";
         } else {
             choiceGroup.style.display =
-                "block";
+                "none";
 
             fixedDate.style.display =
-                "none";
+                "block";
         }
     }
 
@@ -3931,6 +4048,872 @@
         }
 
         return result;
+    }
+
+    function getLogFactorials(
+        n
+    ) {
+        if (
+            logFactorialCache.has(
+                n
+            )
+        ) {
+            return logFactorialCache.get(
+                n
+            );
+        }
+
+        const result =
+            new Float64Array(
+                n + 1
+            );
+
+        for (
+            let i = 1;
+            i <= n;
+            i++
+        ) {
+            result[i] =
+                result[i - 1] +
+                Math.log(i);
+        }
+
+        logFactorialCache.set(
+            n,
+            result
+        );
+
+        return result;
+    }
+
+    /*
+     * E_p(x) =
+     *
+     *     1 + px + p²x²/2! + ...
+     *
+     * through the largest occupancy that is
+     * still NOT considered an appearance threshold.
+     */
+    function buildRestrictedCoefficients(
+        threshold,
+        clicks,
+        probability
+    ) {
+        const length =
+            Math.min(
+                threshold,
+                clicks + 1
+            );
+
+        const coefficients =
+            new Float64Array(
+                length
+            );
+
+        coefficients[0] =
+            1;
+
+        for (
+            let j = 1;
+            j < length;
+            j++
+        ) {
+            coefficients[j] =
+                coefficients[j - 1] *
+                probability /
+                j;
+        }
+
+        return coefficients;
+    }
+
+    function multiplyByShortPolynomial(
+        source,
+        shortPolynomial,
+        maxDegree
+    ) {
+        const newLength =
+            Math.min(
+                maxDegree + 1,
+                source.length +
+                    shortPolynomial.length -
+                    1
+            );
+
+        const result =
+            new Float64Array(
+                newLength
+            );
+
+        for (
+            let i = 0;
+            i < source.length;
+            i++
+        ) {
+            const sourceValue =
+                source[i];
+
+            if (
+                sourceValue ===
+                0
+            ) {
+                continue;
+            }
+
+            const maxJ =
+                Math.min(
+                    shortPolynomial.length - 1,
+                    maxDegree - i
+                );
+
+            for (
+                let j = 0;
+                j <= maxJ;
+                j++
+            ) {
+                result[i + j] +=
+                    sourceValue *
+                    shortPolynomial[j];
+            }
+        }
+
+        return result;
+    }
+
+    /*
+     * Stores:
+     *
+     * E_p(x)^(categoryCount-u)
+     *
+     * for u = 0 ... maxU.
+     *
+     * This lets the pair-probability calculation reuse
+     * the same polynomial work instead of recalculating it.
+     */
+    function buildRestrictedPowerSnapshots(
+        clicks,
+        threshold,
+        categoryCount,
+        probability,
+        maxU
+    ) {
+        const restricted =
+            buildRestrictedCoefficients(
+                threshold,
+                clicks,
+                probability
+            );
+
+        const snapshots =
+            new Array(
+                maxU + 1
+            );
+
+        let power =
+            new Float64Array(
+                [1]
+            );
+
+        for (
+            let exponent = 0;
+            exponent <= categoryCount;
+            exponent++
+        ) {
+            const unrestrictedCount =
+                categoryCount -
+                exponent;
+
+            if (
+                unrestrictedCount >=
+                    0 &&
+                unrestrictedCount <=
+                    maxU
+            ) {
+                snapshots[
+                    unrestrictedCount
+                ] =
+                    power.slice();
+            }
+
+            if (
+                exponent ===
+                categoryCount
+            ) {
+                break;
+            }
+
+            power =
+                multiplyByShortPolynomial(
+                    power,
+                    restricted,
+                    clicks
+                );
+        }
+
+        return snapshots;
+    }
+
+    /*
+     * Calculates:
+     *
+     * n! [x^n] (polynomial) e^(rate*x)
+     *
+     * which directly gives a probability contribution.
+     */
+    function exponentialWeightedProbability(
+        polynomial,
+        rate,
+        clicks,
+        logFactorials
+    ) {
+        let sum = 0;
+
+        let compensation = 0;
+
+        for (
+            let t = 0;
+            t < polynomial.length;
+            t++
+        ) {
+            const coefficient =
+                polynomial[t];
+
+            if (
+                coefficient <=
+                0
+            ) {
+                continue;
+            }
+
+            const remaining =
+                clicks -
+                t;
+
+            if (
+                remaining < 0
+            ) {
+                continue;
+            }
+
+            if (
+                rate ===
+                0
+            ) {
+                if (
+                    remaining !==
+                    0
+                ) {
+                    continue;
+                }
+
+                const logTerm =
+                    Math.log(
+                        coefficient
+                    ) +
+                    logFactorials[
+                        clicks
+                    ];
+
+                const term =
+                    Math.exp(
+                        logTerm
+                    );
+
+                const y =
+                    term -
+                    compensation;
+
+                const next =
+                    sum +
+                    y;
+
+                compensation =
+                    (
+                        next -
+                        sum
+                    ) -
+                    y;
+
+                sum =
+                    next;
+
+                continue;
+            }
+
+            const logTerm =
+                Math.log(
+                    coefficient
+                ) +
+                logFactorials[
+                    clicks
+                ] -
+                logFactorials[
+                    remaining
+                ] +
+                remaining *
+                    Math.log(
+                        rate
+                    );
+
+            const term =
+                Math.exp(
+                    logTerm
+                );
+
+            const y =
+                term -
+                compensation;
+
+            const next =
+                sum +
+                y;
+
+            compensation =
+                (
+                    next -
+                    sum
+                ) -
+                y;
+
+            sum =
+                next;
+        }
+
+        return Math.max(
+            0,
+            Math.min(
+                1,
+                sum
+            )
+        );
+    }
+
+    /*
+     * Probability that at least `pairs` different
+     * categories reach `threshold` appearances when
+     * all `categoryCount` categories are equally likely.
+     */
+    function calculateEqualAtLeastPairs(
+        clicks,
+        threshold,
+        pairs,
+        categoryCount
+    ) {
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks <= 0 ||
+            threshold > clicks ||
+            pairs > categoryCount ||
+            pairs * threshold >
+                clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            categoryCount <=
+            0
+        ) {
+            return 0;
+        }
+
+        const cacheKey =
+            "equal|" +
+            categoryCount +
+            "|" +
+            clicks +
+            "|" +
+            threshold +
+            "|" +
+            pairs;
+
+        if (
+            probabilityCalculationCache.has(
+                cacheKey
+            )
+        ) {
+            return probabilityCalculationCache.get(
+                cacheKey
+            );
+        }
+
+        const maxU =
+            pairs -
+            1;
+
+        const probabilityPerCategory =
+            1 /
+            categoryCount;
+
+        const snapshots =
+            buildRestrictedPowerSnapshots(
+                clicks,
+                threshold,
+                categoryCount,
+                probabilityPerCategory,
+                maxU
+            );
+
+        const logFactorials =
+            getLogFactorials(
+                clicks
+            );
+
+        const unrestrictedProbabilities =
+            new Float64Array(
+                pairs
+            );
+
+        for (
+            let u = 0;
+            u < pairs;
+            u++
+        ) {
+            unrestrictedProbabilities[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    snapshots[u],
+                    u *
+                        probabilityPerCategory,
+                    clicks,
+                    logFactorials
+                );
+        }
+
+        /*
+         * P(r heavy categories)
+         *
+         * Inclusion-exclusion:
+         *
+         * C(m,r) ×
+         * Σ (-1)^(r-u) C(r,u) Q(u)
+         */
+        let complement =
+            0;
+
+        for (
+            let r = 0;
+            r < pairs;
+            r++
+        ) {
+            let inner =
+                0;
+
+            for (
+                let u = 0;
+                u <= r;
+                u++
+            ) {
+                inner +=
+                    (
+                        (
+                            (r - u) %
+                            2 ===
+                            0
+                        )
+                            ? 1
+                            : -1
+                    ) *
+                    combination(
+                        r,
+                        u
+                    ) *
+                    unrestrictedProbabilities[
+                        u
+                    ];
+            }
+
+            complement +=
+                combination(
+                    categoryCount,
+                    r
+                ) *
+                inner;
+        }
+
+        let result =
+            1 -
+            complement;
+
+        if (
+            !Number.isFinite(
+                result
+            )
+        ) {
+            result =
+                0;
+        }
+
+        result =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    result
+                )
+            );
+
+        probabilityCalculationCache.set(
+            cacheKey,
+            result
+        );
+
+        return result;
+    }
+
+    /*
+     * Default mode:
+     *
+     * 365 normal dates each have probability 4/1461.
+     * February 29 has probability 1/1461.
+     *
+     * The calculation uses one separate rare category
+     * instead of pretending all 366 categories are equal.
+     */
+    function calculateRareAtLeastPairs(
+        clicks,
+        threshold,
+        pairs
+    ) {
+        const normalCategories =
+            365;
+
+        const normalProbability =
+            4 /
+            1461;
+
+        const rareProbability =
+            1 /
+            1461;
+
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks <= 0 ||
+            threshold > clicks ||
+            pairs > 366 ||
+            pairs * threshold >
+                clicks
+        ) {
+            return 0;
+        }
+
+        const cacheKey =
+            "rare|" +
+            clicks +
+            "|" +
+            threshold +
+            "|" +
+            pairs;
+
+        if (
+            probabilityCalculationCache.has(
+                cacheKey
+            )
+        ) {
+            return probabilityCalculationCache.get(
+                cacheKey
+            );
+        }
+
+        const maxU =
+            pairs -
+            1;
+
+        const snapshots =
+            buildRestrictedPowerSnapshots(
+                clicks,
+                threshold,
+                normalCategories,
+                normalProbability,
+                maxU
+            );
+
+        const restrictedRare =
+            buildRestrictedCoefficients(
+                threshold,
+                clicks,
+                rareProbability
+            );
+
+        const logFactorials =
+            getLogFactorials(
+                clicks
+            );
+
+        /*
+         * A[u]:
+         *
+         * All normal categories represented by the
+         * inclusion-exclusion term are restricted,
+         * u normal categories are unrestricted,
+         * and February 29 is unrestricted.
+         */
+        const unrestrictedRare =
+            new Float64Array(
+                pairs
+            );
+
+        /*
+         * B[u]:
+         *
+         * Same setup, except February 29 is restricted
+         * to fewer than `threshold` appearances.
+         */
+        const restrictedRareContribution =
+            new Float64Array(
+                pairs
+            );
+
+        for (
+            let u = 0;
+            u < pairs;
+            u++
+        ) {
+            const unrestrictedRate =
+                u *
+                    normalProbability +
+                rareProbability;
+
+            unrestrictedRare[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    snapshots[u],
+                    unrestrictedRate,
+                    clicks,
+                    logFactorials
+                );
+
+            const withRestrictedRare =
+                multiplyByShortPolynomial(
+                    snapshots[u],
+                    restrictedRare,
+                    clicks
+                );
+
+            restrictedRareContribution[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    withRestrictedRare,
+                    u *
+                        normalProbability,
+                    clicks,
+                    logFactorials
+                );
+        }
+
+        /*
+         * The complement is:
+         *
+         * total heavy dates < pairs.
+         *
+         * This includes:
+         *
+         * 1. Rare date is NOT heavy.
+         * 2. Rare date IS heavy, with the normal-date
+         *    heavy count adjusted by one.
+         */
+        let complement =
+            0;
+
+        for (
+            let r = 0;
+            r < pairs;
+            r++
+        ) {
+            let normalNotHeavyInner =
+                0;
+
+            for (
+                let u = 0;
+                u <= r;
+                u++
+            ) {
+                normalNotHeavyInner +=
+                    (
+                        (
+                            (r - u) %
+                            2 ===
+                            0
+                        )
+                            ? 1
+                            : -1
+                    ) *
+                    combination(
+                        r,
+                        u
+                    ) *
+                    unrestrictedRare[
+                        u
+                    ];
+            }
+
+            complement +=
+                combination(
+                    normalCategories,
+                    r
+                ) *
+                normalNotHeavyInner;
+
+            /*
+             * If the rare date itself is heavy,
+             * the normal-date heavy count can be at most
+             * pairs - 2 for the total to remain below pairs.
+             */
+            if (
+                r <=
+                pairs - 2
+            ) {
+                let rareHeavyInner =
+                    0;
+
+                for (
+                    let u = 0;
+                    u <= r;
+                    u++
+                ) {
+                    const rareHeavyTerm =
+                        unrestrictedRare[
+                            u
+                        ] -
+                        restrictedRareContribution[
+                            u
+                        ];
+
+                    rareHeavyInner +=
+                        (
+                            (
+                                (r - u) %
+                                2 ===
+                                0
+                            )
+                                ? 1
+                                : -1
+                        ) *
+                        combination(
+                            r,
+                            u
+                        ) *
+                        rareHeavyTerm;
+                }
+
+                complement +=
+                    combination(
+                        normalCategories,
+                        r
+                    ) *
+                    rareHeavyInner;
+            }
+        }
+
+        let result =
+            1 -
+            complement;
+
+        if (
+            !Number.isFinite(
+                result
+            )
+        ) {
+            result =
+                0;
+        }
+
+        result =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    result
+                )
+            );
+
+        probabilityCalculationCache.set(
+            cacheKey,
+            result
+        );
+
+        return result;
+    }
+
+    function calculateAnyPairProbability(
+        clicks,
+        appearances,
+        pairs
+    ) {
+        const mode =
+            getProbabilityMode();
+
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks < 0 ||
+            appearances < 1 ||
+            pairs < 1
+        ) {
+            return 0;
+        }
+
+        if (
+            appearances >
+            clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            pairs *
+                appearances >
+            clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            return calculateEqualAtLeastPairs(
+                clicks,
+                appearances,
+                pairs,
+                365
+            );
+        }
+
+        if (
+            mode ===
+            "equal"
+        ) {
+            return calculateEqualAtLeastPairs(
+                clicks,
+                appearances,
+                pairs,
+                366
+            );
+        }
+
+        return calculateRareAtLeastPairs(
+            clicks,
+            appearances,
+            pairs
+        );
     }
 
     function calculateSpecific() {
@@ -3970,11 +4953,23 @@
 
         let p;
 
+        const mode =
+            getProbabilityMode();
+
         if (
-            feb29SameChance
+            mode ===
+            "remove"
         ) {
             p =
-                1 / 366;
+                1 /
+                365;
+        } else if (
+            mode ===
+            "equal"
+        ) {
+            p =
+                1 /
+                366;
         } else {
             const selectedDate =
                 document.getElementById(
@@ -3986,10 +4981,12 @@
                 "feb29"
             ) {
                 p =
-                    1 / 1461;
+                    1 /
+                    1461;
             } else {
                 p =
-                    4 / 1461;
+                    4 /
+                    1461;
             }
         }
 
@@ -4023,64 +5020,6 @@
         );
     }
 
-    function multiplyProbabilityPolynomial(
-        polynomial,
-        p,
-        clicks,
-        maxCount
-    ) {
-        const next =
-            new Array(
-                clicks + 1
-            ).fill(0);
-
-        for (
-            let s = 0;
-            s <= clicks;
-            s++
-        ) {
-            let total = 0;
-            let factor = 1;
-
-            const maxJ =
-                Math.min(
-                    maxCount -
-                        1,
-                    s
-                );
-
-            for (
-                let j = 0;
-                j <= maxJ;
-                j++
-            ) {
-                if (
-                    j > 0
-                ) {
-                    factor *=
-                        (
-                            (s -
-                                j +
-                                1) /
-                            j
-                        ) *
-                        p;
-                }
-
-                total +=
-                    polynomial[
-                        s - j
-                    ] *
-                    factor;
-            }
-
-            next[s] =
-                total;
-        }
-
-        return next;
-    }
-
     function calculateAny() {
         const clicks =
             Number(
@@ -4096,6 +5035,13 @@
                 ).value
             );
 
+        const pairs =
+            Number(
+                document.getElementById(
+                    "anyPairs"
+                ).value
+            );
+
         if (
             !Number.isInteger(
                 clicks
@@ -4103,8 +5049,13 @@
             !Number.isInteger(
                 appearances
             ) ||
+            !Number.isInteger(
+                pairs
+            ) ||
             clicks < 0 ||
             appearances <
+                1 ||
+            pairs <
                 1
         ) {
             showResult(
@@ -4121,9 +5072,10 @@
             displayProbability(
                 "anyResult",
                 0,
-                "at least " +
-                    appearances +
-                    " appearances"
+                buildAnyResultDescription(
+                    appearances,
+                    pairs
+                )
             );
 
             return;
@@ -4131,120 +5083,61 @@
 
         if (
             appearances >
-            clicks
-        ) {
-            displayProbability(
-                "anyResult",
-                0,
-                "at least " +
-                    appearances +
-                    " appearances"
-            );
-
-            return;
-        }
-
-        if (
-            appearances ===
-            1
-        ) {
-            displayProbability(
-                "anyResult",
-                1,
-                "at least 1 appearance"
-            );
-
-            return;
-        }
-
-        let polynomial =
-            new Array(
-                clicks + 1
-            ).fill(0);
-
-        polynomial[0] = 1;
-
-        if (
-            feb29SameChance
-        ) {
-            const p =
-                1 / 366;
-
-            for (
-                let i = 0;
-                i < 366;
-                i++
-            ) {
-                polynomial =
-                    multiplyProbabilityPolynomial(
-                        polynomial,
-                        p,
-                        clicks,
-                        appearances
-                    );
-            }
-        } else {
-            const normalP =
-                4 / 1461;
-
-            const rareP =
-                1 / 1461;
-
-            for (
-                let i = 0;
-                i < 365;
-                i++
-            ) {
-                polynomial =
-                    multiplyProbabilityPolynomial(
-                        polynomial,
-                        normalP,
-                        clicks,
-                        appearances
-                    );
-            }
-
-            polynomial =
-                multiplyProbabilityPolynomial(
-                    polynomial,
-                    rareP,
-                    clicks,
-                    appearances
-                );
-        }
-
-        let noDateReachesK =
-            polynomial[
+            clicks ||
+            pairs *
+                appearances >
                 clicks
-            ];
-
-        if (
-            !Number.isFinite(
-                noDateReachesK
-            )
         ) {
-            noDateReachesK = 0;
+            displayProbability(
+                "anyResult",
+                0,
+                buildAnyResultDescription(
+                    appearances,
+                    pairs
+                )
+            );
+
+            return;
         }
 
-        let probability =
-            1 -
-            noDateReachesK;
-
-        probability =
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    probability
-                )
+        const probability =
+            calculateAnyPairProbability(
+                clicks,
+                appearances,
+                pairs
             );
 
         displayProbability(
             "anyResult",
             probability,
+            buildAnyResultDescription(
+                appearances,
+                pairs
+            )
+        );
+    }
+
+    function buildAnyResultDescription(
+        appearances,
+        pairs
+    ) {
+        return (
             "at least " +
-                appearances +
-                " appearances"
+            pairs +
+            " different date" +
+            (
+                pairs === 1
+                    ? ""
+                    : "s"
+            ) +
+            " appearing at least " +
+            appearances +
+            " time" +
+            (
+                appearances === 1
+                    ? ""
+                    : "s"
+            )
         );
     }
 
@@ -4898,9 +5791,11 @@
                 probabilityLine.innerHTML =
                     "<strong>February 29:</strong> " +
                     (
-                        save.feb29SameChance
-                            ? "Equal chance"
-                            : "4× rarer"
+                        save.removeFeb29
+                            ? "Removed"
+                            : save.feb29SameChance
+                                ? "Equal chance"
+                                : "4× rarer"
                     );
 
                 details.appendChild(
@@ -5403,7 +6298,21 @@
         );
 
         feb29SameChance =
-            save.feb29SameChance;
+            Boolean(
+                save.feb29SameChance
+            );
+
+        removeFeb29 =
+            Boolean(
+                save.removeFeb29
+            );
+
+        if (
+            removeFeb29
+        ) {
+            feb29SameChance =
+                false;
+        }
 
         rebuildLeaderCache();
 
@@ -5423,6 +6332,11 @@
         ).checked =
             feb29SameChance;
 
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
+
         updateProbabilityModeText();
         updateDuplicates();
 
@@ -5438,7 +6352,7 @@
     }
 
     /*
-     * Load an old version into its parent save.
+     * LOAD OLD VERSION
      */
     function loadVersion(
         saveId,
@@ -5578,6 +6492,18 @@
                 version.feb29SameChance
             );
 
+        removeFeb29 =
+            Boolean(
+                version.removeFeb29
+            );
+
+        if (
+            removeFeb29
+        ) {
+            feb29SameChance =
+                false;
+        }
+
         refreshedSave.clickCount =
             version.clickCount;
 
@@ -5600,6 +6526,11 @@
         refreshedSave.feb29SameChance =
             Boolean(
                 version.feb29SameChance
+            );
+
+        refreshedSave.removeFeb29 =
+            Boolean(
+                version.removeFeb29
             );
 
         refreshedSave.logs =
@@ -5630,6 +6561,11 @@
             "equalFeb29"
         ).checked =
             feb29SameChance;
+
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
 
         updateProbabilityModeText();
         updateDuplicates();
@@ -5701,10 +6637,6 @@
             return;
         }
 
-        /*
-         * DocumentFragment avoids causing a layout/repaint
-         * for every individual log element.
-         */
         const fragment =
             document.createDocumentFragment();
 
@@ -6122,7 +7054,7 @@
         persistBeforeLeaving
     );
 
-    /* DELETE SAVES */
+    /* DELETE */
 
     function openDeleteWarning() {
         if (
@@ -6242,6 +7174,11 @@
     }
 
     function deleteSelectedSaves() {
+        const deletingCurrent =
+            selectedSaveIds.has(
+                currentSaveId
+            );
+
         historySaves =
             historySaves.filter(
                 save =>
@@ -6251,9 +7188,7 @@
             );
 
         if (
-            selectedSaveIds.has(
-                currentSaveId
-            )
+            deletingCurrent
         ) {
             currentSaveId = null;
             currentSaveName =
@@ -6399,21 +7334,42 @@
     ).addEventListener(
         "change",
         function() {
-            feb29SameChance =
-                this.checked;
-
-            updateProbabilityModeText();
-
             if (
-                clickCount > 0
+                this.checked
             ) {
-                addLog(
-                    "February 29 is now " +
-                        (
-                            feb29SameChance
-                                ? "equal to every other date."
-                                : "4× rarer than other dates."
-                        )
+                setProbabilityMode(
+                    "equal"
+                );
+            } else if (
+                !document.getElementById(
+                    "removeFeb29"
+                ).checked
+            ) {
+                setProbabilityMode(
+                    "rare"
+                );
+            }
+        }
+    );
+
+    document.getElementById(
+        "removeFeb29"
+    ).addEventListener(
+        "change",
+        function() {
+            if (
+                this.checked
+            ) {
+                setProbabilityMode(
+                    "remove"
+                );
+            } else if (
+                !document.getElementById(
+                    "equalFeb29"
+                ).checked
+            ) {
+                setProbabilityMode(
+                    "rare"
                 );
             }
         }
@@ -6587,17 +7543,37 @@
     loadHistory();
     loadSettings();
 
-    rebuildLeaderCache();
+    /*
+     * Old saves may not have the new mode property.
+     * Defaulting to false preserves their old behavior.
+     */
+    feb29SameChance =
+        Boolean(
+            feb29SameChance
+        );
+
+    removeFeb29 =
+        Boolean(
+            removeFeb29
+        );
+
+    document.getElementById(
+        "equalFeb29"
+    ).checked =
+        feb29SameChance;
+
+    document.getElementById(
+        "removeFeb29"
+    ).checked =
+        removeFeb29;
 
     updateProbabilityModeText();
-    updateDuplicates();
 
+    rebuildLeaderCache();
+
+    updateDuplicates();
     renderHistory();
 
-    /*
-     * Logs are not rendered at startup because the Probability
-     * tab is the visible default tab.
-     */
     if (
         isLogsTabActive()
     ) {

@@ -1,0 +1,8322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Day Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            max-height: 100vh;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #infoButton {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            font-family: monospace;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        #infoButton:hover {
+            background: #444;
+        }
+
+        .counter {
+            font-size: clamp(18px, 4vw, 24px);
+            margin-bottom: clamp(15px, 4vh, 35px);
+            flex-shrink: 0;
+        }
+
+        .counter span {
+            font-weight: bold;
+        }
+
+        .date {
+            font-size: clamp(34px, 8vw, 52px);
+            font-weight: bold;
+            min-height: clamp(45px, 9vw, 70px);
+            margin-bottom: clamp(18px, 4vh, 40px);
+            flex-shrink: 0;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 6px;
+        }
+
+        #generateButton {
+            background: #fff;
+            color: #111;
+        }
+
+        #generateButton:hover {
+            background: #ddd;
+        }
+
+        .generateActions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #simulateButton {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            margin: 6px;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            font-size: 27px;
+            font-weight: normal;
+            line-height: 1;
+        }
+
+        #simulateButton:hover {
+            background: #444;
+        }
+
+        #resetButton {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: auto;
+            height: 38px;
+            padding: 0 13px;
+            margin: 0;
+            border-radius: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            font-size: 13px;
+            z-index: 30;
+        }
+
+        #resetButton:hover {
+            background: #444;
+        }
+
+        .duplicates {
+            margin-top: clamp(18px, 4vh, 40px);
+            text-align: left;
+            background: #1b1b1b;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid #333;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .duplicatesTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .duplicatesTop h2 {
+            margin: 0;
+            font-size: 22px;
+            text-align: left;
+        }
+
+        #sortButton {
+            margin: 0;
+            padding: 9px 12px;
+            font-size: 14px;
+            background: #292929;
+            color: #ddd;
+            border: 1px solid #444;
+            white-space: nowrap;
+        }
+
+        #sortButton:hover {
+            background: #383838;
+        }
+
+        #duplicateList,
+        .historyList,
+        .logsList {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #duplicateList {
+            min-height: 0;
+            flex: 1;
+            padding-right: 4px;
+        }
+
+        #duplicateList::-webkit-scrollbar,
+        .historyList::-webkit-scrollbar,
+        .logsList::-webkit-scrollbar,
+        .versionList::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        #duplicateList::-webkit-scrollbar-track,
+        .historyList::-webkit-scrollbar-track,
+        .logsList::-webkit-scrollbar-track,
+        .versionList::-webkit-scrollbar-track {
+            background: #151515;
+            border-radius: 10px;
+        }
+
+        #duplicateList::-webkit-scrollbar-thumb,
+        .historyList::-webkit-scrollbar-thumb,
+        .logsList::-webkit-scrollbar-thumb,
+        .versionList::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        #duplicateList::-webkit-scrollbar-thumb:hover,
+        .historyList::-webkit-scrollbar-thumb:hover,
+        .logsList::-webkit-scrollbar-thumb:hover,
+        .versionList::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .dateCard {
+            background: #242424;
+            border: 1px solid #3a3a3a;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .dateCard:last-child {
+            margin-bottom: 0;
+        }
+
+        .dateCardHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dateCardHeader:hover {
+            background: #2b2b2b;
+        }
+
+        .dateInfo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .dateName {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .appearanceCount {
+            font-size: 14px;
+            color: #aaa;
+            white-space: nowrap;
+        }
+
+        .cardArrow {
+            font-size: 22px;
+            color: #aaa;
+            transition: transform 0.2s;
+        }
+
+        .dateCard.expanded .cardArrow {
+            transform: rotate(180deg);
+        }
+
+        .dateDetails {
+            display: none;
+            padding: 0 16px 14px 16px;
+            border-top: 1px solid #333;
+        }
+
+        .dateCard.expanded .dateDetails {
+            display: block;
+        }
+
+        .milestoneLine {
+            font-size: 14px;
+            color: #aaa;
+            padding: 6px 0;
+        }
+
+        .milestoneLine strong {
+            color: #ddd;
+        }
+
+        .none {
+            text-align: center;
+            color: #999;
+            padding: 20px 0;
+        }
+
+        /* MAIN INFO PANEL */
+
+        .probabilityPanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            z-index: 1000;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .probabilityBox {
+            width: 100%;
+            max-width: 580px;
+            max-height: calc(100vh - 40px);
+            margin: 0 auto;
+            background: #1b1b1b;
+            border: 1px solid #3a3a3a;
+            border-radius: 18px;
+            padding: 0 24px 24px;
+            text-align: left;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .probabilityHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 -24px;
+            padding: 20px 24px 16px;
+            background: #1b1b1b;
+            flex-shrink: 0;
+            border-bottom: 1px solid #292929;
+        }
+
+        .probabilityHeader h2 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        #closeProbability {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: #333;
+            color: #ddd;
+            border: 1px solid #555;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        #closeProbability:hover {
+            background: #444;
+        }
+
+        /* TABS */
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            background: #121212;
+            border: 1px solid #303030;
+            padding: 4px;
+            border-radius: 11px;
+            margin: 16px 0;
+            flex-shrink: 0;
+        }
+
+        .tabButton {
+            margin: 0;
+            padding: 10px 8px;
+            border-radius: 8px;
+            background: transparent;
+            color: #888;
+            border: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .tabButton:hover {
+            background: #222;
+            color: #ccc;
+        }
+
+        .tabButton.active {
+            background: #333;
+            color: white;
+        }
+
+        .tabContent {
+            display: none;
+            min-height: 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 3px;
+        }
+
+        .tabContent.active {
+            display: block;
+        }
+
+        .tabContent::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .tabContent::-webkit-scrollbar-track {
+            background: #151515;
+            border-radius: 10px;
+        }
+
+        .tabContent::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .tabContent::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* PROBABILITY */
+
+        .rarityOption {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 13px 14px;
+            margin-bottom: 14px;
+        }
+
+        .rarityLabel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rarityLabel input {
+            width: 19px;
+            height: 19px;
+            accent-color: white;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .rarityText {
+            font-size: 15px;
+            color: #ddd;
+        }
+
+        .rarityDescription {
+            margin-top: 5px;
+            margin-left: 31px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .calculator {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 14px;
+        }
+
+        .calculator h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+        }
+
+        .calculatorDescription {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .inputRow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .inputRow.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .inputGroup {
+            margin-bottom: 12px;
+        }
+
+        .inputGroup label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+
+        .inputGroup input,
+        .inputGroup select {
+            width: 100%;
+            background: #151515;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 15px;
+        }
+
+        .fixedDateDisplay {
+            width: 100%;
+            background: #151515;
+            color: #aaa;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 15px;
+        }
+
+        .calculateButton {
+            width: 100%;
+            margin: 4px 0 0 0;
+            padding: 11px;
+            background: #fff;
+            color: #111;
+            font-size: 15px;
+        }
+
+        .calculateButton:hover {
+            background: #ddd;
+        }
+
+        .result {
+            margin-top: 14px;
+            padding: 12px;
+            background: #151515;
+            border-radius: 8px;
+            text-align: center;
+            color: #ddd;
+            font-size: 15px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .result strong {
+            color: white;
+            font-size: 18px;
+        }
+
+        .formulaNote {
+            margin-top: 18px;
+            color: #777;
+            font-size: 12px;
+            line-height: 1.5;
+            padding-bottom: 4px;
+        }
+
+        /* HISTORY */
+
+        .historySection {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .historyTop {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .historySettingRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 3px 0;
+        }
+
+        .historySettingRow + .historySettingRow {
+            border-top: 1px solid #333;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        .historySettingText {
+            min-width: 0;
+        }
+
+        .historySettingTitle {
+            font-size: 14px;
+            font-weight: bold;
+            color: #eee;
+        }
+
+        .historySettingDescription {
+            margin-top: 3px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .searchInput,
+        .logFilter {
+            width: 100%;
+            background: #151515;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .searchInput:focus,
+        .logFilter:focus {
+            border-color: #666;
+        }
+
+        .historySearch {
+            margin-top: 12px;
+        }
+
+        .switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            border-radius: 50%;
+            background: #aaa;
+            transition: 0.2s;
+        }
+
+        .switch input:checked + .slider {
+            background: #555;
+            border-color: #777;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+            background: white;
+        }
+
+        .historyToolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .historyCount {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .historyActions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .historyActionButton {
+            margin: 0;
+            padding: 8px 11px;
+            font-size: 12px;
+            background: #292929;
+            color: #ddd;
+            border: 1px solid #444;
+        }
+
+        .historyActionButton:hover {
+            background: #383838;
+        }
+
+        .historyActionButton.danger {
+            background: #2c1f1f;
+            border-color: #553838;
+            color: #ddd;
+        }
+
+        .historyActionButton.danger:hover {
+            background: #3a2323;
+        }
+
+        .historyList {
+            min-height: 0;
+            padding-right: 3px;
+            padding-bottom: 4px;
+        }
+
+        .saveCard {
+            background: #242424;
+            border: 1px solid #3a3a3a;
+            border-radius: 13px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .saveCard:hover {
+            border-color: #4a4a4a;
+        }
+
+        .saveCard.pinned {
+            border-color: #5a5a5a;
+        }
+
+        .saveCard.current {
+            border-color: #777;
+        }
+
+        .saveHeader {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 12px;
+        }
+
+        .saveCheckboxWrap {
+            display: none;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .selectionMode .saveCheckboxWrap {
+            display: flex;
+        }
+
+        .saveCheckbox {
+            width: 18px;
+            height: 18px;
+            accent-color: white;
+            cursor: pointer;
+        }
+
+        .saveMain {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .saveTitleRow {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .saveTitle {
+            font-size: 15px;
+            font-weight: bold;
+            color: #eee;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .saveBadge {
+            font-size: 9px;
+            color: #ddd;
+            background: #303030;
+            border: 1px solid #444;
+            padding: 3px 6px;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .pinIndicator {
+            font-size: 13px;
+            color: #ddd;
+            flex-shrink: 0;
+        }
+
+        .saveMeta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .saveActions {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .saveIconButton {
+            width: 31px;
+            height: 31px;
+            padding: 0;
+            margin: 0;
+            border-radius: 8px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            color: #aaa;
+            font-size: 15px;
+        }
+
+        .saveIconButton:hover {
+            background: #393939;
+            color: white;
+        }
+
+        .saveIconButton.pin.active {
+            color: white;
+        }
+
+        .saveExpandButton {
+            transition: transform 0.2s;
+        }
+
+        .saveCard.expanded .saveExpandButton {
+            transform: rotate(180deg);
+        }
+
+        .saveDetails {
+            display: none;
+            border-top: 1px solid #333;
+            padding: 11px 12px 13px;
+        }
+
+        .saveCard.expanded .saveDetails {
+            display: block;
+        }
+
+        .saveDetailLine {
+            color: #888;
+            font-size: 11px;
+            margin-bottom: 7px;
+            line-height: 1.5;
+        }
+
+        .saveDetailLine strong {
+            color: #bbb;
+        }
+
+        .versionHeading {
+            color: #bbb;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 12px 0 7px;
+        }
+
+        .versionList {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 3px;
+        }
+
+        .versionCard {
+            background: #191919;
+            border: 1px solid #303030;
+            border-radius: 9px;
+            padding: 9px;
+            margin-bottom: 6px;
+        }
+
+        .versionCard:last-child {
+            margin-bottom: 0;
+        }
+
+        .versionTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .versionNumber {
+            color: #ccc;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 0;
+        }
+
+        .versionName {
+            color: #eee;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .versionDate {
+            color: #666;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .versionMeta {
+            color: #777;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+
+        .versionReason {
+            color: #aaa;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .versionActions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .versionActionButton {
+            margin: 0;
+            padding: 6px 9px;
+            border-radius: 7px;
+            background: #292929;
+            color: #bbb;
+            border: 1px solid #3d3d3d;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .versionActionButton:hover {
+            background: #373737;
+            color: white;
+        }
+
+        .versionActionButton.load {
+            color: #ddd;
+        }
+
+        .versionActionButton.delete {
+            background: #2b2020;
+            border-color: #4d3535;
+        }
+
+        .versionActionButton.delete:hover {
+            background: #3b2525;
+        }
+
+        .noVersions {
+            color: #666;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .emptyHistory {
+            background: #242424;
+            border: 1px dashed #404040;
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+            color: #777;
+        }
+
+        .emptyHistoryTitle {
+            color: #bbb;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .emptyHistoryText {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* LOGS */
+
+        .logsTop {
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 12px;
+            padding: 13px;
+            margin-bottom: 12px;
+        }
+
+        .logsSaveName {
+            font-size: 15px;
+            font-weight: bold;
+            color: #eee;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .logsSaveMeta {
+            margin-top: 4px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .logControls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .logFilter {
+            width: auto;
+        }
+
+        .logsList {
+            min-height: 0;
+            padding-right: 3px;
+            padding-bottom: 5px;
+        }
+
+        .logItem {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #242424;
+            border: 1px solid #383838;
+            border-radius: 10px;
+            padding: 10px 11px;
+            margin-bottom: 7px;
+        }
+
+        .logText {
+            flex: 1;
+            min-width: 0;
+            color: #ddd;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .logNumber {
+            flex-shrink: 0;
+            color: #888;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .logPinButton {
+            width: 27px;
+            height: 27px;
+            flex-shrink: 0;
+            padding: 0;
+            margin: -2px 0 0;
+            border-radius: 7px;
+            background: #2d2d2d;
+            color: #aaa;
+            border: 1px solid #444;
+            font-size: 14px;
+        }
+
+        .logPinButton:hover,
+        .logPinButton.pinned {
+            background: #393939;
+            color: white;
+        }
+
+        .logTime {
+            flex-shrink: 0;
+            color: #666;
+            font-size: 9px;
+            white-space: nowrap;
+            padding-top: 1px;
+        }
+
+        .emptyLogs {
+            background: #242424;
+            border: 1px dashed #404040;
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+            color: #777;
+            font-size: 11px;
+        }
+
+        /* NAME MODAL */
+
+        .namePanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .namePanel.open {
+            display: flex;
+        }
+
+        .nameBox {
+            width: 100%;
+            max-width: 390px;
+            background: #202020;
+            border: 1px solid #454545;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .nameBox h3 {
+            margin: 0 0 7px;
+            font-size: 19px;
+        }
+
+        .nameDescription {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        #saveNameInput {
+            width: 100%;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 9px;
+            padding: 11px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #saveNameInput:focus {
+            border-color: #666;
+        }
+
+        #simulationCountInput {
+            width: 100%;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 9px;
+            padding: 11px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #simulationCountInput:focus {
+            border-color: #666;
+        }
+
+        .nameButtons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 17px;
+        }
+
+        .nameButton {
+            margin: 0;
+            padding: 9px 13px;
+            font-size: 12px;
+        }
+
+        .nameCancel {
+            background: #303030;
+            color: #ddd;
+            border: 1px solid #454545;
+        }
+
+        .nameNoSave {
+            background: #2b2b2b;
+            color: #bbb;
+            border: 1px solid #444;
+        }
+
+        .nameConfirm {
+            background: #e8e8e8;
+            color: #111;
+        }
+
+        /* DELETE WARNING */
+
+        .warningPanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2200;
+            background: rgba(0, 0, 0, 0.78);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .warningPanel.open {
+            display: flex;
+        }
+
+        .warningBox {
+            width: 100%;
+            max-width: 380px;
+            background: #202020;
+            border: 1px solid #454545;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .warningIcon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #2d2424;
+            border: 1px solid #553838;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ddd;
+            font-size: 19px;
+            margin-bottom: 12px;
+        }
+
+        .warningBox h3 {
+            margin: 0 0 7px;
+            font-size: 19px;
+        }
+
+        .warningBox p {
+            margin: 0;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .warningButtons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .warningButton {
+            margin: 0;
+            padding: 9px 14px;
+            font-size: 13px;
+        }
+
+        .warningCancel {
+            background: #303030;
+            color: #ddd;
+            border: 1px solid #454545;
+        }
+
+        .warningDelete {
+            background: #e8e8e8;
+            color: #111;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                width: 92%;
+                padding: 12px 0;
+            }
+
+            #infoButton {
+                top: 10px;
+                left: 10px;
+                width: 38px;
+                height: 38px;
+                font-size: 20px;
+            }
+
+            #resetButton {
+                top: 10px;
+                right: 10px;
+                height: 34px;
+                padding: 0 10px;
+                font-size: 12px;
+                border-radius: 9px;
+            }
+
+            .counter {
+                margin-bottom: 12px;
+            }
+
+            .date {
+                margin-bottom: 15px;
+            }
+
+            button {
+                padding: 12px 18px;
+                font-size: 16px;
+            }
+
+            .duplicates {
+                margin-top: 14px;
+                padding: 13px;
+            }
+
+            .duplicatesTop h2 {
+                font-size: 19px;
+            }
+
+            #sortButton {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+
+            .dateCardHeader {
+                padding: 12px;
+            }
+
+            .dateName {
+                font-size: 17px;
+            }
+
+            .appearanceCount {
+                font-size: 12px;
+            }
+
+            .probabilityPanel {
+                padding: 10px;
+            }
+
+            .probabilityBox {
+                max-height: calc(100vh - 20px);
+                padding: 0 18px 18px;
+            }
+
+            .probabilityHeader {
+                margin: 0 -18px;
+                padding: 17px 18px 14px;
+            }
+
+            .probabilityHeader h2 {
+                font-size: 20px;
+            }
+
+            .tabs {
+                margin: 12px 0;
+            }
+
+            .tabButton {
+                font-size: 11px;
+                padding: 9px 4px;
+            }
+
+            .inputRow,
+            .inputRow.three {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .historyToolbar {
+                align-items: flex-start;
+            }
+
+            .historyActions {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .historyActionButton {
+                font-size: 11px;
+                padding: 7px 9px;
+            }
+
+            .saveTitle {
+                font-size: 14px;
+            }
+
+            .saveIconButton {
+                width: 29px;
+                height: 29px;
+            }
+
+            .logItem {
+                gap: 7px;
+            }
+
+            .logTime {
+                font-size: 8px;
+            }
+
+            .versionActions {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-height: 650px) {
+            .container {
+                padding: 8px 0;
+            }
+
+            .counter {
+                margin-bottom: 8px;
+            }
+
+            .date {
+                margin-bottom: 10px;
+                min-height: 40px;
+            }
+
+            .duplicates {
+                margin-top: 10px;
+            }
+
+            button {
+                padding: 9px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="infoButton">i</button>
+
+    <div class="container">
+
+        <div class="counter">
+            Times clicked: <span id="counter">0</span>
+        </div>
+
+        <div class="date" id="date">
+            Click the button!
+        </div>
+
+        <div class="generateActions">
+            <button id="generateButton">
+                Random Date
+            </button>
+
+            <button
+                id="simulateButton"
+                type="button"
+                aria-label="Add simulated clicks"
+                title="Add simulated clicks"
+            >
+                +
+            </button>
+        </div>
+
+        <div class="duplicates">
+
+            <div class="duplicatesTop">
+                <h2>Repeated Dates</h2>
+
+                <button id="sortButton">
+                    ↕ Appearances
+                </button>
+            </div>
+
+            <div id="duplicateList">
+                <div class="none">
+                    No duplicate dates yet.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <button id="resetButton">
+        Reset
+    </button>
+
+    <!-- INFO PANEL -->
+
+    <div class="probabilityPanel" id="probabilityPanel">
+
+        <div class="probabilityBox">
+
+            <div class="probabilityHeader">
+
+                <h2>Random Day Info</h2>
+
+                <button id="closeProbability">
+                    ×
+                </button>
+
+            </div>
+
+            <div class="tabs">
+
+                <button
+                    class="tabButton active"
+                    data-tab="probabilityTab"
+                >
+                    Probability
+                </button>
+
+                <button
+                    class="tabButton"
+                    data-tab="historyTab"
+                >
+                    History
+                </button>
+
+                <button
+                    class="tabButton"
+                    data-tab="logsTab"
+                >
+                    Logs
+                </button>
+
+            </div>
+
+            <!-- PROBABILITY -->
+
+            <div
+                class="tabContent active"
+                id="probabilityTab"
+            >
+
+                <div class="rarityOption">
+
+                    <label class="rarityLabel">
+
+                        <input
+                            type="checkbox"
+                            id="equalFeb29"
+                        >
+
+                        <span class="rarityText">
+                            Equal February 29
+                        </span>
+
+                    </label>
+
+                    <div class="rarityDescription">
+                        On: all 366 dates have equal chance • Off: normal setting
+                    </div>
+
+                </div>
+
+                <div class="rarityOption">
+
+                    <label class="rarityLabel">
+
+                        <input
+                            type="checkbox"
+                            id="removeFeb29"
+                        >
+
+                        <span class="rarityText">
+                            Remove February 29
+                        </span>
+
+                    </label>
+
+                    <div class="rarityDescription">
+                        On: 365 dates only • Off: February 29 included
+                    </div>
+
+                </div>
+
+                <div class="calculator">
+
+                    <h3>Specific Date</h3>
+
+                    <div class="calculatorDescription">
+                        Chance that one particular date appears exactly X times in Z clicks.
+                    </div>
+
+                    <div
+                        class="inputGroup"
+                        id="specificDateChoiceGroup"
+                    >
+
+                        <label>Date</label>
+
+                        <select id="specificDateChoice">
+
+                            <option value="specific">
+                                Specific Date
+                            </option>
+
+                            <option value="feb29">
+                                February 29
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div
+                        class="inputGroup"
+                        id="specificDateFixed"
+                        style="display: none;"
+                    >
+
+                        <label>Date</label>
+
+                        <div class="fixedDateDisplay">
+                            Specific Date
+                        </div>
+
+                    </div>
+
+                    <div class="inputRow">
+
+                        <div class="inputGroup">
+
+                            <label>Clicks</label>
+
+                            <input
+                                id="specificClicks"
+                                type="number"
+                                min="0"
+                                value="30"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Appearances</label>
+
+                            <input
+                                id="specificAppearances"
+                                type="number"
+                                min="0"
+                                value="2"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="calculateButton"
+                        id="specificCalculate"
+                    >
+                        Calculate
+                    </button>
+
+                    <div
+                        class="result"
+                        id="specificResult"
+                    ></div>
+
+                </div>
+
+                <div class="calculator">
+
+                    <h3>Any Date</h3>
+
+                    <div class="calculatorDescription">
+                        Chance that at least Y different dates each appear X or more times in Z clicks.
+                    </div>
+
+                    <div class="inputRow three">
+
+                        <div class="inputGroup">
+
+                            <label>Clicks</label>
+
+                            <input
+                                id="anyClicks"
+                                type="number"
+                                min="0"
+                                value="30"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Appearances</label>
+
+                            <input
+                                id="anyAppearances"
+                                type="number"
+                                min="1"
+                                value="2"
+                            >
+
+                        </div>
+
+                        <div class="inputGroup">
+
+                            <label>Pairs</label>
+
+                            <input
+                                id="anyPairs"
+                                type="number"
+                                min="1"
+                                value="1"
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="calculateButton"
+                        id="anyCalculate"
+                    >
+                        Calculate
+                    </button>
+
+                    <div
+                        class="result"
+                        id="anyResult"
+                    ></div>
+
+                </div>
+
+                <div class="formulaNote">
+                    Current setting:
+                    <span id="probabilityModeText">
+                        February 29 is 4× rarer.
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- HISTORY -->
+
+            <div
+                class="tabContent"
+                id="historyTab"
+            >
+
+                <div class="historySection">
+
+                    <div class="historyTop">
+
+                        <div class="historySettingRow">
+
+                            <div class="historySettingText">
+
+                                <div class="historySettingTitle">
+                                    Auto-save on Reset
+                                </div>
+
+                                <div class="historySettingDescription">
+                                    Save the current run before resetting.
+                                </div>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="autoSaveToggle"
+                                    checked
+                                >
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        <div class="historySettingRow">
+
+                            <div class="historySettingText">
+
+                                <div class="historySettingTitle">
+                                    Name New Saves
+                                </div>
+
+                                <div class="historySettingDescription">
+                                    Ask for a name when a new save is created.
+                                </div>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="customNamesToggle"
+                                >
+
+                                <span class="slider"></span>
+
+                            </label>
+
+                        </div>
+
+                        <input
+                            class="searchInput historySearch"
+                            id="historySearch"
+                            type="search"
+                            placeholder="Search saves, old versions, and saved logs"
+                            aria-label="Search saves, old versions, and saved logs"
+                        >
+
+                    </div>
+
+                    <div class="historyToolbar">
+
+                        <div
+                            class="historyCount"
+                            id="historyCount"
+                        >
+                            0 saves
+                        </div>
+
+                        <div class="historyActions">
+
+                            <button
+                                class="historyActionButton"
+                                id="deleteModeButton"
+                            >
+                                Delete
+                            </button>
+
+                            <button
+                                class="historyActionButton"
+                                id="cancelDeleteButton"
+                                style="display: none;"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                class="historyActionButton danger"
+                                id="deleteSelectedButton"
+                                style="display: none;"
+                            >
+                                Delete Selected
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="historyList"
+                        id="historyList"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <!-- LOGS -->
+
+            <div
+                class="tabContent"
+                id="logsTab"
+            >
+
+                <div class="logsTop">
+
+                    <div
+                        class="logsSaveName"
+                        id="logsSaveName"
+                    >
+                        Current Session
+                    </div>
+
+                    <div
+                        class="logsSaveMeta"
+                        id="logsSaveMeta"
+                    >
+                        0 log entries
+                    </div>
+
+                    <div class="logControls">
+
+                        <input
+                            class="searchInput"
+                            id="logSearch"
+                            type="search"
+                            placeholder="Search logs"
+                            aria-label="Search logs"
+                        >
+
+                        <select
+                            class="logFilter"
+                            id="logFilter"
+                            aria-label="Filter logs by type"
+                        >
+                            <option value="all">All logs</option>
+                            <option value="click">Clicks</option>
+                            <option value="simulation">Simulations</option>
+                            <option value="milestone">Milestones</option>
+                            <option value="setting">Settings</option>
+                            <option value="pinned">Pinned</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div
+                    class="logsList"
+                    id="logsList"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SIMULATED CLICKS MODAL -->
+
+    <div
+        class="namePanel"
+        id="simulationPanel"
+    >
+
+        <div class="nameBox">
+
+            <h3>
+                Simulate clicks
+            </h3>
+
+            <div class="nameDescription">
+                Add randomly generated dates without clicking the Random Date button each time.
+            </div>
+
+            <input
+                id="simulationCountInput"
+                type="number"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                placeholder="Example: 700"
+            >
+
+            <div class="nameButtons">
+
+                <button
+                    class="nameButton nameCancel"
+                    id="simulationCancel"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="nameButton nameConfirm"
+                    id="simulationConfirm"
+                    type="button"
+                >
+                    Simulate
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SAVE NAME MODAL -->
+
+    <div
+        class="namePanel"
+        id="namePanel"
+    >
+
+        <div class="nameBox">
+
+            <h3 id="nameModalTitle">
+                Name your save
+            </h3>
+
+            <div
+                class="nameDescription"
+                id="nameModalDescription"
+            >
+                Give this run a name so it is easy to find later.
+            </div>
+
+            <input
+                id="saveNameInput"
+                type="text"
+                maxlength="80"
+                placeholder="Example: My 3,000 Click Run"
+            >
+
+            <div class="nameButtons">
+
+                <button
+                    class="nameButton nameCancel"
+                    id="nameCancel"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="nameButton nameNoSave"
+                    id="nameNoSave"
+                    style="display: none;"
+                >
+                    Reset Without Saving
+                </button>
+
+                <button
+                    class="nameButton nameConfirm"
+                    id="nameConfirm"
+                >
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DELETE WARNING -->
+
+    <div
+        class="warningPanel"
+        id="warningPanel"
+    >
+
+        <div class="warningBox">
+
+            <div class="warningIcon">
+                !
+            </div>
+
+            <h3 id="warningTitle">
+                Delete saves?
+            </h3>
+
+            <p id="warningText">
+                This will permanently delete the selected saves.
+            </p>
+
+            <div class="warningButtons">
+
+                <button
+                    class="warningButton warningCancel"
+                    id="warningCancel"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="warningButton warningDelete"
+                    id="warningConfirm"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<script>
+    let clickCount = 0;
+    let sortMode = "appearances";
+
+    let feb29SameChance = false;
+    let removeFeb29 = false;
+
+    let currentDate = "";
+    let currentSaveId = null;
+    let currentSaveName = "Current Session";
+
+    let historySaves = [];
+    let sessionLogs = [];
+
+    let historySearchQuery = "";
+    let logSearchQuery = "";
+    let logFilter = "all";
+
+    let autoSaveOnReset = true;
+    let customNamesOn = false;
+
+    let selectionMode = false;
+
+    const selectedSaveIds = new Set();
+
+    const dateCounts = {};
+    const dateHistory = {};
+
+    const STORAGE_KEY =
+        "randomDayGeneratorHistory";
+
+    const AUTOSAVE_KEY =
+        "randomDayGeneratorAutoSave";
+
+    const CUSTOM_NAMES_KEY =
+        "randomDayGeneratorCustomNames";
+
+    let nameModalMode = null;
+    let nameModalSaveId = null;
+    let nameModalVersionId = null;
+
+    let pendingDeleteType = null;
+    let pendingDeleteSaveId = null;
+    let pendingDeleteVersionId = null;
+
+    /*
+     * HIGH-CLICK OPTIMIZATION
+     */
+
+    const equalDatePool = [];
+    const rareDatePool = [];
+    const noFeb29DatePool = [];
+
+    const duplicateCardCache = new Map();
+
+    let leaderDate = "";
+    let leaderCount = 0;
+    let leaderFirstAppearance = Infinity;
+
+    let logRenderQueued = false;
+
+    const probabilityCalculationCache =
+        new Map();
+
+    const logFactorialCache =
+        new Map();
+
+    const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ];
+
+    const daysInEachMonth = [
+        31,
+        29,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+    ];
+
+    /*
+     * DATE POOLS
+     *
+     * rareDatePool:
+     *     365 normal dates × 4 + February 29
+     *
+     * equalDatePool:
+     *     366 equal dates
+     *
+     * noFeb29DatePool:
+     *     365 equal dates
+     */
+    function buildDatePools() {
+        equalDatePool.length = 0;
+        rareDatePool.length = 0;
+        noFeb29DatePool.length = 0;
+
+        for (
+            let month = 0;
+            month < 12;
+            month++
+        ) {
+            for (
+                let day = 1;
+                day <= daysInEachMonth[month];
+                day++
+            ) {
+                const formatted =
+                    monthNames[month] +
+                    " " +
+                    day;
+
+                equalDatePool.push(
+                    formatted
+                );
+
+                if (
+                    month === 1 &&
+                    day === 29
+                ) {
+                    continue;
+                }
+
+                noFeb29DatePool.push(
+                    formatted
+                );
+
+                for (
+                    let i = 0;
+                    i < 4;
+                    i++
+                ) {
+                    rareDatePool.push(
+                        formatted
+                    );
+                }
+            }
+        }
+
+        rareDatePool.push(
+            "February 29"
+        );
+    }
+
+    function safeStorageGet(
+        key,
+        fallback
+    ) {
+        try {
+            const value =
+                localStorage.getItem(
+                    key
+                );
+
+            if (
+                value === null
+            ) {
+                return fallback;
+            }
+
+            return JSON.parse(
+                value
+            );
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function safeStorageSet(
+        key,
+        value
+    ) {
+        try {
+            localStorage.setItem(
+                key,
+                JSON.stringify(
+                    value
+                )
+            );
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function cloneObject(
+        object
+    ) {
+        if (
+            typeof structuredClone ===
+            "function"
+        ) {
+            try {
+                return structuredClone(
+                    object
+                );
+            } catch (error) {
+                // Fallback below.
+            }
+        }
+
+        return JSON.parse(
+            JSON.stringify(
+                object
+            )
+        );
+    }
+
+    function createId() {
+        if (
+            window.crypto &&
+            typeof window.crypto.randomUUID ===
+                "function"
+        ) {
+            return window.crypto.randomUUID();
+        }
+
+        return (
+            Date.now().toString(36) +
+            "-" +
+            Math.random()
+                .toString(36)
+                .slice(2)
+        );
+    }
+
+    function formatSaveDate(
+        timestamp
+    ) {
+        return new Date(
+            timestamp
+        ).toLocaleString(
+            undefined,
+            {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit"
+            }
+        );
+    }
+
+    function formatLogTime(
+        timestamp
+    ) {
+        return new Date(
+            timestamp
+        ).toLocaleString(
+            undefined,
+            {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        );
+    }
+
+    function getDefaultSaveName() {
+        return (
+            "Save — " +
+            formatSaveDate(
+                Date.now()
+            )
+        );
+    }
+
+    function getDefaultVersionName(
+        versionNumber,
+        timestamp
+    ) {
+        return (
+            "Version " +
+            versionNumber +
+            " — " +
+            formatSaveDate(
+                timestamp
+            )
+        );
+    }
+
+    function getProbabilityMode() {
+        if (
+            removeFeb29
+        ) {
+            return "remove";
+        }
+
+        if (
+            feb29SameChance
+        ) {
+            return "equal";
+        }
+
+        return "rare";
+    }
+
+    function getProbabilityModeText() {
+        const mode =
+            getProbabilityMode();
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            return (
+                "February 29 is removed; the other 365 dates have equal chance."
+            );
+        }
+
+        if (
+            mode ===
+            "equal"
+        ) {
+            return (
+                "All 366 dates have the same chance."
+            );
+        }
+
+        return (
+            "February 29 is 4× rarer."
+        );
+    }
+
+    function setProbabilityMode(
+        mode,
+        shouldLog = true
+    ) {
+        const oldMode =
+            getProbabilityMode();
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            removeFeb29 = true;
+            feb29SameChance = false;
+        } else if (
+            mode ===
+            "equal"
+        ) {
+            removeFeb29 = false;
+            feb29SameChance = true;
+        } else {
+            removeFeb29 = false;
+            feb29SameChance = false;
+        }
+
+        document.getElementById(
+            "equalFeb29"
+        ).checked =
+            feb29SameChance;
+
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
+
+        updateProbabilityModeText();
+
+        if (
+            shouldLog &&
+            clickCount > 0 &&
+            oldMode !==
+                mode
+        ) {
+            if (
+                mode ===
+                "remove"
+            ) {
+                addLog(
+                    "February 29 has been removed from the random dates."
+                );
+            } else if (
+                mode ===
+                "equal"
+            ) {
+                addLog(
+                    "February 29 is now equal to every other date."
+                );
+            } else {
+                addLog(
+                    "February 29 is now 4× rarer than other dates."
+                );
+            }
+        }
+    }
+
+    function getSaveVersionState(
+        source
+    ) {
+        return {
+            timestamp:
+                source.updatedAt ||
+                source.timestamp ||
+                Date.now(),
+
+            clickCount:
+                source.clickCount,
+
+            currentDate:
+                source.currentDate ||
+                "",
+
+            dateCounts:
+                cloneObject(
+                    source.dateCounts ||
+                        {}
+                ),
+
+            dateHistory:
+                cloneObject(
+                    source.dateHistory ||
+                        {}
+                ),
+
+            feb29SameChance:
+                Boolean(
+                    source.feb29SameChance
+                ),
+
+            removeFeb29:
+                Boolean(
+                    source.removeFeb29
+                ),
+
+            logs:
+                cloneObject(
+                    source.logs ||
+                        []
+                )
+        };
+    }
+
+    function getCurrentState() {
+        return {
+            clickCount,
+
+            currentDate,
+
+            dateCounts:
+                cloneObject(
+                    dateCounts
+                ),
+
+            dateHistory:
+                cloneObject(
+                    dateHistory
+                ),
+
+            feb29SameChance,
+
+            removeFeb29,
+
+            logs:
+                cloneObject(
+                    sessionLogs
+                )
+        };
+    }
+
+    function getComparableSignature(
+        state
+    ) {
+        return JSON.stringify({
+            clickCount:
+                state.clickCount,
+
+            currentDate:
+                state.currentDate ||
+                "",
+
+            dateCounts:
+                state.dateCounts ||
+                {},
+
+            dateHistory:
+                state.dateHistory ||
+                {},
+
+            feb29SameChance:
+                Boolean(
+                    state.feb29SameChance
+                ),
+
+            removeFeb29:
+                Boolean(
+                    state.removeFeb29
+                )
+        });
+    }
+
+    function getSaveSignature(
+        save
+    ) {
+        return getComparableSignature(
+            save
+        );
+    }
+
+    function getCurrentSignature() {
+        return getComparableSignature(
+            getCurrentState()
+        );
+    }
+
+    function rebuildLeaderCache() {
+        leaderDate = "";
+        leaderCount = 0;
+        leaderFirstAppearance =
+            Infinity;
+
+        const dates =
+            Object.keys(
+                dateCounts
+            );
+
+        for (
+            let i = 0;
+            i < dates.length;
+            i++
+        ) {
+            const date =
+                dates[i];
+
+            const count =
+                dateCounts[date] ||
+                0;
+
+            const firstAppearance =
+                dateHistory[date]?.[0] ??
+                Infinity;
+
+            if (
+                count >
+                leaderCount
+            ) {
+                leaderDate =
+                    date;
+
+                leaderCount =
+                    count;
+
+                leaderFirstAppearance =
+                    firstAppearance;
+            } else if (
+                count ===
+                    leaderCount &&
+                firstAppearance <
+                    leaderFirstAppearance
+            ) {
+                leaderDate =
+                    date;
+
+                leaderFirstAppearance =
+                    firstAppearance;
+            }
+        }
+    }
+
+    function getLeader(
+        counts
+    ) {
+        const dates =
+            Object.keys(
+                counts
+            );
+
+        if (
+            dates.length ===
+            0
+        ) {
+            return null;
+        }
+
+        dates.sort(
+            (a, b) => {
+                const countDifference =
+                    counts[b] -
+                    counts[a];
+
+                if (
+                    countDifference !==
+                    0
+                ) {
+                    return countDifference;
+                }
+
+                return (
+                    (
+                        dateHistory[a]?.[0] ??
+                        Infinity
+                    ) -
+                    (
+                        dateHistory[b]?.[0] ??
+                        Infinity
+                    )
+                );
+            }
+        );
+
+        return {
+            date: dates[0],
+            count:
+                counts[
+                    dates[0]
+                ]
+        };
+    }
+
+    function loadHistory() {
+        const loaded =
+            safeStorageGet(
+                STORAGE_KEY,
+                []
+            );
+
+        if (
+            !Array.isArray(
+                loaded
+            )
+        ) {
+            historySaves = [];
+            return;
+        }
+
+        historySaves =
+            loaded
+                .filter(
+                    save =>
+                        save &&
+                        typeof save ===
+                            "object" &&
+                        typeof save.id ===
+                            "string" &&
+                        typeof save.timestamp ===
+                            "number" &&
+                        typeof save.clickCount ===
+                            "number" &&
+                        typeof save.dateCounts ===
+                            "object" &&
+                        typeof save.dateHistory ===
+                            "object" &&
+                        typeof save.feb29SameChance ===
+                            "boolean"
+                )
+                .map(
+                    save => {
+                        let versions =
+                            Array.isArray(
+                                save.versions
+                            )
+                                ? save.versions
+                                : [];
+
+                        versions =
+                            versions.map(
+                                (
+                                    version,
+                                    index
+                                ) => ({
+                                    ...version,
+
+                                    id:
+                                        typeof version.id ===
+                                        "string"
+                                            ? version.id
+                                            : createId(),
+
+                                    timestamp:
+                                        typeof version.timestamp ===
+                                        "number"
+                                            ? version.timestamp
+                                            : (
+                                                  save.timestamp ||
+                                                  Date.now()
+                                              ),
+
+                                    name:
+                                        typeof version.name ===
+                                        "string"
+                                            ? version.name
+                                            : getDefaultVersionName(
+                                                  index +
+                                                      1,
+                                                  typeof version.timestamp ===
+                                                  "number"
+                                                      ? version.timestamp
+                                                      : Date.now()
+                                              ),
+
+                                    logs:
+                                        Array.isArray(
+                                            version.logs
+                                        )
+                                            ? version.logs
+                                            : [],
+
+                                    reason:
+                                        typeof version.reason ===
+                                        "string"
+                                            ? version.reason
+                                            : "Saved version",
+
+                                    removeFeb29:
+                                        Boolean(
+                                            version.removeFeb29
+                                        )
+                                })
+                            );
+
+                        return {
+                            ...save,
+
+                            name:
+                                typeof save.name ===
+                                "string"
+                                    ? save.name
+                                    : "Save — " +
+                                      formatSaveDate(
+                                          save.timestamp
+                                      ),
+
+                            pinned:
+                                Boolean(
+                                    save.pinned
+                                ),
+
+                            currentDate:
+                                typeof save.currentDate ===
+                                "string"
+                                    ? save.currentDate
+                                    : "",
+
+                            logs:
+                                Array.isArray(
+                                    save.logs
+                                )
+                                    ? save.logs
+                                    : [],
+
+                            updatedAt:
+                                typeof save.updatedAt ===
+                                "number"
+                                    ? save.updatedAt
+                                    : save.timestamp,
+
+                            removeFeb29:
+                                Boolean(
+                                    save.removeFeb29
+                                ),
+
+                            versions
+                        };
+                    }
+                );
+
+        saveHistory();
+    }
+
+    function loadSettings() {
+        const savedAutoSave =
+            safeStorageGet(
+                AUTOSAVE_KEY,
+                true
+            );
+
+        const savedCustomNames =
+            safeStorageGet(
+                CUSTOM_NAMES_KEY,
+                false
+            );
+
+        autoSaveOnReset =
+            savedAutoSave !== false;
+
+        customNamesOn =
+            savedCustomNames === true;
+
+        document.getElementById(
+            "autoSaveToggle"
+        ).checked =
+            autoSaveOnReset;
+
+        document.getElementById(
+            "customNamesToggle"
+        ).checked =
+            customNamesOn;
+    }
+
+    function saveHistory() {
+        safeStorageSet(
+            STORAGE_KEY,
+            historySaves
+        );
+    }
+
+    function saveSettings() {
+        safeStorageSet(
+            AUTOSAVE_KEY,
+            autoSaveOnReset
+        );
+
+        safeStorageSet(
+            CUSTOM_NAMES_KEY,
+            customNamesOn
+        );
+    }
+
+    function isLogsTabActive() {
+        return document
+            .getElementById(
+                "logsTab"
+            )
+            .classList.contains(
+                "active"
+            );
+    }
+
+    function scheduleLogsRender() {
+        if (
+            !isLogsTabActive()
+        ) {
+            return;
+        }
+
+        if (
+            logRenderQueued
+        ) {
+            return;
+        }
+
+        logRenderQueued = true;
+
+        requestAnimationFrame(
+            () => {
+                logRenderQueued =
+                    false;
+
+                if (
+                    isLogsTabActive()
+                ) {
+                    renderLogs();
+                }
+            }
+        );
+    }
+
+    function addLog(
+        text,
+        timestamp = Date.now()
+    ) {
+        sessionLogs.push({
+            id: createId(),
+            timestamp,
+            text,
+            pinned: false
+        });
+
+        scheduleLogsRender();
+    }
+
+    function findDuplicateSave(
+        signature,
+        excludeId = null
+    ) {
+        return (
+            historySaves.find(
+                save =>
+                    save.id !==
+                        excludeId &&
+                    getSaveSignature(
+                        save
+                    ) ===
+                        signature
+            ) || null
+        );
+    }
+
+    function getVersionSignature(
+        version
+    ) {
+        return getComparableSignature(
+            version
+        );
+    }
+
+    function versionAlreadyExists(
+        save,
+        state
+    ) {
+        const signature =
+            getComparableSignature(
+                state
+            );
+
+        return (
+            save.versions || []
+        ).some(
+            version =>
+                getVersionSignature(
+                    version
+                ) ===
+                signature
+        );
+    }
+
+    function archiveSaveVersion(
+        save,
+        reason,
+        customName = null
+    ) {
+        const previousState =
+            getSaveVersionState(
+                save
+            );
+
+        if (
+            versionAlreadyExists(
+                save,
+                previousState
+            )
+        ) {
+            return null;
+        }
+
+        if (
+            !Array.isArray(
+                save.versions
+            )
+        ) {
+            save.versions = [];
+        }
+
+        const versionNumber =
+            save.versions.length +
+            1;
+
+        const version = {
+            id: createId(),
+
+            timestamp:
+                previousState.timestamp,
+
+            name:
+                customName ||
+                getDefaultVersionName(
+                    versionNumber,
+                    previousState.timestamp
+                ),
+
+            clickCount:
+                previousState.clickCount,
+
+            currentDate:
+                previousState.currentDate,
+
+            dateCounts:
+                previousState.dateCounts,
+
+            dateHistory:
+                previousState.dateHistory,
+
+            feb29SameChance:
+                previousState.feb29SameChance,
+
+            removeFeb29:
+                previousState.removeFeb29,
+
+            logs:
+                previousState.logs,
+
+            reason:
+                reason ||
+                "Saved version"
+        };
+
+        save.versions.push(
+            version
+        );
+
+        return version;
+    }
+
+    function updateCurrentSave(
+        reason
+    ) {
+        if (
+            !currentSaveId ||
+            clickCount <= 0
+        ) {
+            return null;
+        }
+
+        const save =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    currentSaveId
+            );
+
+        if (
+            !save
+        ) {
+            currentSaveId = null;
+            return null;
+        }
+
+        const currentState =
+            getCurrentState();
+
+        const currentSignature =
+            getComparableSignature(
+                currentState
+            );
+
+        const existingSignature =
+            getSaveSignature(
+                save
+            );
+
+        if (
+            currentSignature ===
+            existingSignature
+        ) {
+            return save;
+        }
+
+        const duplicate =
+            findDuplicateSave(
+                currentSignature,
+                save.id
+            );
+
+        if (
+            duplicate
+        ) {
+            currentSaveId =
+                duplicate.id;
+
+            currentSaveName =
+                duplicate.name ||
+                "Unnamed Save";
+
+            return duplicate;
+        }
+
+        archiveSaveVersion(
+            save,
+            reason
+        );
+
+        save.clickCount =
+            currentState.clickCount;
+
+        save.currentDate =
+            currentState.currentDate;
+
+        save.dateCounts =
+            cloneObject(
+                currentState.dateCounts
+            );
+
+        save.dateHistory =
+            cloneObject(
+                currentState.dateHistory
+            );
+
+        save.feb29SameChance =
+            currentState.feb29SameChance;
+
+        save.removeFeb29 =
+            currentState.removeFeb29;
+
+        save.logs =
+            cloneObject(
+                currentState.logs
+            );
+
+        save.updatedAt =
+            Date.now();
+
+        currentSaveName =
+            save.name;
+
+        saveHistory();
+        renderHistory();
+
+        return save;
+    }
+
+    function createSaveFromCurrentRun(
+        name
+    ) {
+        if (
+            clickCount <= 0
+        ) {
+            return null;
+        }
+
+        const state =
+            getCurrentState();
+
+        const signature =
+            getComparableSignature(
+                state
+            );
+
+        const duplicate =
+            findDuplicateSave(
+                signature
+            );
+
+        if (
+            duplicate
+        ) {
+            currentSaveId =
+                duplicate.id;
+
+            currentSaveName =
+                duplicate.name ||
+                "Unnamed Save";
+
+            return duplicate;
+        }
+
+        const now =
+            Date.now();
+
+        const newSave = {
+            id: createId(),
+
+            timestamp:
+                now,
+
+            updatedAt:
+                now,
+
+            name:
+                name ||
+                getDefaultSaveName(),
+
+            pinned:
+                false,
+
+            clickCount:
+                state.clickCount,
+
+            currentDate:
+                state.currentDate,
+
+            dateCounts:
+                cloneObject(
+                    state.dateCounts
+                ),
+
+            dateHistory:
+                cloneObject(
+                    state.dateHistory
+                ),
+
+            feb29SameChance:
+                state.feb29SameChance,
+
+            removeFeb29:
+                state.removeFeb29,
+
+            logs:
+                cloneObject(
+                    state.logs
+                ),
+
+            versions: []
+        };
+
+        historySaves.push(
+            newSave
+        );
+
+        currentSaveId =
+            newSave.id;
+
+        currentSaveName =
+            newSave.name;
+
+        saveHistory();
+        renderHistory();
+
+        return newSave;
+    }
+
+    function ensureCurrentRunSaved(
+        reason
+    ) {
+        if (
+            clickCount <= 0
+        ) {
+            return null;
+        }
+
+        if (
+            currentSaveId
+        ) {
+            return updateCurrentSave(
+                reason
+            );
+        }
+
+        return createSaveFromCurrentRun();
+    }
+
+    function clearCurrentRun() {
+        clickCount = 0;
+
+        currentDate = "";
+        currentSaveId = null;
+        currentSaveName =
+            "Current Session";
+
+        sessionLogs = [];
+
+        for (
+            const date in dateCounts
+        ) {
+            delete dateCounts[
+                date
+            ];
+        }
+
+        for (
+            const date in dateHistory
+        ) {
+            delete dateHistory[
+                date
+            ];
+        }
+
+        leaderDate = "";
+        leaderCount = 0;
+        leaderFirstAppearance =
+            Infinity;
+
+        duplicateCardCache.clear();
+
+        document.getElementById(
+            "counter"
+        ).textContent =
+            "0";
+
+        document.getElementById(
+            "date"
+        ).textContent =
+            "Click the button!";
+
+        updateDuplicates();
+
+        if (
+            isLogsTabActive()
+        ) {
+            renderLogs();
+        }
+
+        renderHistory();
+    }
+
+    /*
+     * OPTIMIZED RANDOM DATE GENERATION
+     */
+    function generateDate(
+        options = {}
+    ) {
+        const updateUi =
+            options.updateUi !==
+            false;
+
+        const updateDuplicateList =
+            options.updateDuplicateList !==
+            false;
+
+        const logEvents =
+            options.logEvents !==
+            false;
+
+        clickCount++;
+
+        let pool;
+
+        if (
+            removeFeb29
+        ) {
+            pool =
+                noFeb29DatePool;
+        } else if (
+            feb29SameChance
+        ) {
+            pool =
+                equalDatePool;
+        } else {
+            pool =
+                rareDatePool;
+        }
+
+        const formattedDate =
+            pool[
+                Math.floor(
+                    Math.random() *
+                        pool.length
+                )
+            ];
+
+        const previousCount =
+            dateCounts[
+                formattedDate
+            ] || 0;
+
+        const previousLeader =
+            leaderDate
+                ? {
+                      date:
+                          leaderDate,
+                      count:
+                          leaderCount
+                  }
+                : null;
+
+        currentDate =
+            formattedDate;
+
+        if (
+            updateUi
+        ) {
+            document.getElementById(
+                "counter"
+            ).textContent =
+                clickCount;
+
+            document.getElementById(
+                "date"
+            ).textContent =
+                formattedDate;
+        }
+
+        dateCounts[
+            formattedDate
+        ] =
+            previousCount +
+            1;
+
+        if (
+            !dateHistory[
+                formattedDate
+            ]
+        ) {
+            dateHistory[
+                formattedDate
+            ] = [];
+        }
+
+        dateHistory[
+            formattedDate
+        ].push(
+            clickCount
+        );
+
+        const newCount =
+            previousCount +
+            1;
+
+        const eventTime =
+            Date.now();
+
+        if (
+            logEvents &&
+            newCount === 1
+        ) {
+            addLog(
+                "Click " +
+                    clickCount +
+                    ", " +
+                    formattedDate +
+                    " made its first appearance!",
+                eventTime
+            );
+        } else if (
+            logEvents
+        ) {
+            addLog(
+                "Click " +
+                    clickCount +
+                    ", " +
+                    formattedDate +
+                    " reached " +
+                    newCount +
+                    " appearances!",
+                eventTime
+            );
+        }
+
+        if (
+            logEvents &&
+            previousLeader &&
+            previousLeader.date !==
+                formattedDate &&
+            newCount >
+                previousLeader.count
+        ) {
+            addLog(
+                formattedDate +
+                    " has passed " +
+                    previousLeader.date +
+                    " at " +
+                    previousLeader.count +
+                    " appearances, click " +
+                    clickCount,
+                eventTime
+            );
+
+            addLog(
+                formattedDate +
+                    " is now top 1 with " +
+                    newCount +
+                    " appearances at click " +
+                    clickCount,
+                eventTime
+            );
+        } else if (
+            logEvents &&
+            !previousLeader
+        ) {
+            addLog(
+                formattedDate +
+                    " is now top 1 with " +
+                    newCount +
+                    " appearance at click " +
+                    clickCount,
+                eventTime
+            );
+        }
+
+        if (
+            newCount >
+            leaderCount
+        ) {
+            leaderDate =
+                formattedDate;
+
+            leaderCount =
+                newCount;
+
+            leaderFirstAppearance =
+                dateHistory[
+                    formattedDate
+                ][0];
+        }
+
+        if (
+            updateDuplicateList
+        ) {
+            updateDuplicateAfterGeneration(
+                formattedDate,
+                previousCount
+            );
+        }
+    }
+
+    function openSimulationModal() {
+        const input =
+            document.getElementById(
+                "simulationCountInput"
+            );
+
+        input.value = "";
+
+        document.getElementById(
+            "simulationPanel"
+        ).classList.add(
+            "open"
+        );
+
+        setTimeout(
+            () => input.focus(),
+            50
+        );
+    }
+
+    function closeSimulationModal() {
+        document.getElementById(
+            "simulationPanel"
+        ).classList.remove(
+            "open"
+        );
+    }
+
+    function simulateClicks() {
+        const input =
+            document.getElementById(
+                "simulationCountInput"
+            );
+
+        const amount =
+            Number(input.value);
+
+        if (
+            !Number.isSafeInteger(
+                amount
+            ) ||
+            amount < 1
+        ) {
+            input.setCustomValidity(
+                "Enter a whole number of at least 1."
+            );
+
+            input.reportValidity();
+            return;
+        }
+
+        input.setCustomValidity("");
+
+        addLog(
+            "Simulated " +
+                amount.toLocaleString() +
+                (
+                    amount === 1
+                        ? " click."
+                        : " clicks."
+                )
+        );
+
+        for (
+            let index = 0;
+            index < amount;
+            index++
+        ) {
+            generateDate({
+                updateUi: false,
+                updateDuplicateList: false,
+                logEvents: true
+            });
+        }
+
+        document.getElementById(
+            "counter"
+        ).textContent =
+            clickCount;
+
+        document.getElementById(
+            "date"
+        ).textContent =
+            currentDate;
+
+        updateDuplicates();
+
+        closeSimulationModal();
+    }
+
+    function appendDateHistoryLine(
+        details,
+        date,
+        index,
+        click
+    ) {
+        const line =
+            document.createElement(
+                "div"
+            );
+
+        line.className =
+            "milestoneLine";
+
+        const strong =
+            document.createElement(
+                "strong"
+            );
+
+        strong.textContent =
+            index === 0
+                ? "First appeared"
+                : getOrdinal(
+                      index + 1
+                  );
+
+        if (
+            index !== 0
+        ) {
+            strong.textContent +=
+                " appearance";
+        }
+
+        line.appendChild(
+            strong
+        );
+
+        line.appendChild(
+            document.createTextNode(
+                " — Click " +
+                    click
+            )
+        );
+
+        details.appendChild(
+            line
+        );
+    }
+
+    function renderDateDetails(
+        date
+    ) {
+        const entry =
+            duplicateCardCache.get(
+                date
+            );
+
+        if (
+            !entry
+        ) {
+            return;
+        }
+
+        const history =
+            dateHistory[date] ||
+            [];
+
+        const details =
+            entry.details;
+
+        if (
+            entry.renderedHistoryLength ===
+            history.length
+        ) {
+            return;
+        }
+
+        for (
+            let i =
+                entry.renderedHistoryLength;
+            i <
+            history.length;
+            i++
+        ) {
+            appendDateHistoryLine(
+                details,
+                date,
+                i,
+                history[i]
+            );
+        }
+
+        entry.renderedHistoryLength =
+            history.length;
+    }
+
+    function createDuplicateCard(
+        date
+    ) {
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "dateCard";
+
+        card.dataset.date =
+            date;
+
+        const header =
+            document.createElement(
+                "div"
+            );
+
+        header.className =
+            "dateCardHeader";
+
+        const dateInfo =
+            document.createElement(
+                "div"
+            );
+
+        dateInfo.className =
+            "dateInfo";
+
+        const dateName =
+            document.createElement(
+                "span"
+            );
+
+        dateName.className =
+            "dateName";
+
+        dateName.textContent =
+            date;
+
+        const appearanceCount =
+            document.createElement(
+                "span"
+            );
+
+        appearanceCount.className =
+            "appearanceCount";
+
+        appearanceCount.textContent =
+            dateCounts[date] +
+            " appearances";
+
+        dateInfo.appendChild(
+            dateName
+        );
+
+        dateInfo.appendChild(
+            appearanceCount
+        );
+
+        const arrow =
+            document.createElement(
+                "span"
+            );
+
+        arrow.className =
+            "cardArrow";
+
+        arrow.textContent =
+            "⌄";
+
+        header.appendChild(
+            dateInfo
+        );
+
+        header.appendChild(
+            arrow
+        );
+
+        const details =
+            document.createElement(
+                "div"
+            );
+
+        details.className =
+            "dateDetails";
+
+        header.addEventListener(
+            "click",
+            () => {
+                const expanded =
+                    card.classList.toggle(
+                        "expanded"
+                    );
+
+                if (
+                    expanded
+                ) {
+                    renderDateDetails(
+                        date
+                    );
+                }
+            }
+        );
+
+        card.appendChild(
+            header
+        );
+
+        card.appendChild(
+            details
+        );
+
+        const entry = {
+            card,
+            countElement:
+                appearanceCount,
+            details,
+            renderedHistoryLength: 0
+        };
+
+        duplicateCardCache.set(
+            date,
+            entry
+        );
+
+        return entry;
+    }
+
+    function compareDuplicateDates(
+        a,
+        b
+    ) {
+        if (
+            sortMode ===
+            "appearances"
+        ) {
+            const countDifference =
+                (
+                    dateCounts[b] ||
+                    0
+                ) -
+                (
+                    dateCounts[a] ||
+                    0
+                );
+
+            if (
+                countDifference !==
+                0
+            ) {
+                return countDifference;
+            }
+
+            return (
+                (
+                    dateHistory[a]?.[0] ??
+                    Infinity
+                ) -
+                (
+                    dateHistory[b]?.[0] ??
+                    Infinity
+                )
+            );
+        }
+
+        return (
+            (
+                dateHistory[a]?.[1] ??
+                Infinity
+            ) -
+            (
+                dateHistory[b]?.[1] ??
+                Infinity
+            )
+        );
+    }
+
+    function positionDuplicateCard(
+        date
+    ) {
+        const entry =
+            duplicateCardCache.get(
+                date
+            );
+
+        if (
+            !entry ||
+            sortMode !==
+                "appearances"
+        ) {
+            return;
+        }
+
+        const card =
+            entry.card;
+
+        const currentCount =
+            dateCounts[date] ||
+            0;
+
+        let previous =
+            card.previousElementSibling;
+
+        while (
+            previous &&
+            previous.dataset &&
+            previous.dataset.date
+        ) {
+            const previousDate =
+                previous.dataset.date;
+
+            const previousCount =
+                dateCounts[
+                    previousDate
+                ] || 0;
+
+            if (
+                previousCount <
+                currentCount
+            ) {
+                card.parentNode.insertBefore(
+                    card,
+                    previous
+                );
+
+                previous =
+                    card.previousElementSibling;
+            } else {
+                break;
+            }
+        }
+    }
+
+    function updateDuplicateAfterGeneration(
+        date,
+        previousCount
+    ) {
+        const currentCount =
+            dateCounts[date] ||
+            0;
+
+        if (
+            currentCount <
+            2
+        ) {
+            return;
+        }
+
+        const duplicateList =
+            document.getElementById(
+                "duplicateList"
+            );
+
+        let entry =
+            duplicateCardCache.get(
+                date
+            );
+
+        if (
+            previousCount <
+            2
+        ) {
+            const none =
+                duplicateList.querySelector(
+                    ".none"
+                );
+
+            if (
+                none
+            ) {
+                none.remove();
+            }
+
+            entry =
+                createDuplicateCard(
+                    date
+                );
+
+            duplicateList.appendChild(
+                entry.card
+            );
+
+            positionDuplicateCard(
+                date
+            );
+
+            return;
+        }
+
+        if (
+            !entry
+        ) {
+            updateDuplicates();
+
+            entry =
+                duplicateCardCache.get(
+                    date
+                );
+
+            if (
+                !entry
+            ) {
+                return;
+            }
+        }
+
+        entry.countElement.textContent =
+            currentCount +
+            " appearances";
+
+        if (
+            entry.card.classList.contains(
+                "expanded"
+            )
+        ) {
+            renderDateDetails(
+                date
+            );
+        }
+
+        positionDuplicateCard(
+            date
+        );
+    }
+
+    function updateDuplicates() {
+        const duplicateList =
+            document.getElementById(
+                "duplicateList"
+            );
+
+        duplicateCardCache.clear();
+
+        duplicateList.innerHTML =
+            "";
+
+        let duplicates =
+            Object.keys(
+                dateCounts
+            ).filter(
+                date =>
+                    dateCounts[
+                        date
+                    ] >= 2
+            );
+
+        if (
+            duplicates.length ===
+            0
+        ) {
+            const none =
+                document.createElement(
+                    "div"
+                );
+
+            none.className =
+                "none";
+
+            none.textContent =
+                "No duplicate dates yet.";
+
+            duplicateList.appendChild(
+                none
+            );
+
+            return;
+        }
+
+        duplicates.sort(
+            compareDuplicateDates
+        );
+
+        const fragment =
+            document.createDocumentFragment();
+
+        duplicates.forEach(
+            date => {
+                const entry =
+                    createDuplicateCard(
+                        date
+                    );
+
+                fragment.appendChild(
+                    entry.card
+                );
+            }
+        );
+
+        duplicateList.appendChild(
+            fragment
+        );
+    }
+
+    function getOrdinal(
+        number
+    ) {
+        const lastTwo =
+            number % 100;
+
+        if (
+            lastTwo >= 11 &&
+            lastTwo <= 13
+        ) {
+            return (
+                number +
+                "th"
+            );
+        }
+
+        switch (
+            number % 10
+        ) {
+            case 1:
+                return (
+                    number +
+                    "st"
+                );
+
+            case 2:
+                return (
+                    number +
+                    "nd"
+                );
+
+            case 3:
+                return (
+                    number +
+                    "rd"
+                );
+
+            default:
+                return (
+                    number +
+                    "th"
+                );
+        }
+    }
+
+    function toggleSort() {
+        if (
+            sortMode ===
+            "appearances"
+        ) {
+            sortMode =
+                "chronological";
+
+            document.getElementById(
+                "sortButton"
+            ).textContent =
+                "◷ Chronological";
+        } else {
+            sortMode =
+                "appearances";
+
+            document.getElementById(
+                "sortButton"
+            ).textContent =
+                "↕ Appearances";
+        }
+
+        updateDuplicates();
+    }
+
+    /* INFO PANEL */
+
+    function openProbability() {
+        switchTab(
+            "probabilityTab"
+        );
+
+        updateSpecificDateChoice();
+
+        document.getElementById(
+            "probabilityPanel"
+        ).style.display =
+            "block";
+    }
+
+    function closeProbability() {
+        document.getElementById(
+            "probabilityPanel"
+        ).style.display =
+            "none";
+    }
+
+    function switchTab(
+        tabId
+    ) {
+        document
+            .querySelectorAll(
+                ".tabButton"
+            )
+            .forEach(
+                button => {
+                    button.classList.toggle(
+                        "active",
+                        button.dataset
+                            .tab ===
+                            tabId
+                    );
+                }
+            );
+
+        document
+            .querySelectorAll(
+                ".tabContent"
+            )
+            .forEach(
+                content => {
+                    content.classList.toggle(
+                        "active",
+                        content.id ===
+                            tabId
+                    );
+                }
+            );
+
+        if (
+            tabId ===
+            "historyTab"
+        ) {
+            renderHistory();
+        }
+
+        if (
+            tabId ===
+            "logsTab"
+        ) {
+            renderLogs();
+        }
+    }
+
+    function updateProbabilityModeText() {
+        document.getElementById(
+            "probabilityModeText"
+        ).textContent =
+            getProbabilityModeText();
+
+        updateSpecificDateChoice();
+    }
+
+    function updateSpecificDateChoice() {
+        const choiceGroup =
+            document.getElementById(
+                "specificDateChoiceGroup"
+            );
+
+        const fixedDate =
+            document.getElementById(
+                "specificDateFixed"
+            );
+
+        if (
+            getProbabilityMode() ===
+            "rare"
+        ) {
+            choiceGroup.style.display =
+                "block";
+
+            fixedDate.style.display =
+                "none";
+        } else {
+            choiceGroup.style.display =
+                "none";
+
+            fixedDate.style.display =
+                "block";
+        }
+    }
+
+    function combination(
+        n,
+        k
+    ) {
+        if (
+            k < 0 ||
+            k > n
+        ) {
+            return 0;
+        }
+
+        k =
+            Math.min(
+                k,
+                n - k
+            );
+
+        let result = 1;
+
+        for (
+            let i = 1;
+            i <= k;
+            i++
+        ) {
+            result =
+                result *
+                (n - k + i) /
+                i;
+        }
+
+        return result;
+    }
+
+    function getLogFactorials(
+        n
+    ) {
+        if (
+            logFactorialCache.has(
+                n
+            )
+        ) {
+            return logFactorialCache.get(
+                n
+            );
+        }
+
+        const result =
+            new Float64Array(
+                n + 1
+            );
+
+        for (
+            let i = 1;
+            i <= n;
+            i++
+        ) {
+            result[i] =
+                result[i - 1] +
+                Math.log(i);
+        }
+
+        logFactorialCache.set(
+            n,
+            result
+        );
+
+        return result;
+    }
+
+    /*
+     * E_p(x) =
+     *
+     *     1 + px + p²x²/2! + ...
+     *
+     * through the largest occupancy that is
+     * still NOT considered an appearance threshold.
+     */
+    function buildRestrictedCoefficients(
+        threshold,
+        clicks,
+        probability
+    ) {
+        const length =
+            Math.min(
+                threshold,
+                clicks + 1
+            );
+
+        const coefficients =
+            new Float64Array(
+                length
+            );
+
+        coefficients[0] =
+            1;
+
+        for (
+            let j = 1;
+            j < length;
+            j++
+        ) {
+            coefficients[j] =
+                coefficients[j - 1] *
+                probability /
+                j;
+        }
+
+        return coefficients;
+    }
+
+    function multiplyByShortPolynomial(
+        source,
+        shortPolynomial,
+        maxDegree
+    ) {
+        const newLength =
+            Math.min(
+                maxDegree + 1,
+                source.length +
+                    shortPolynomial.length -
+                    1
+            );
+
+        const result =
+            new Float64Array(
+                newLength
+            );
+
+        for (
+            let i = 0;
+            i < source.length;
+            i++
+        ) {
+            const sourceValue =
+                source[i];
+
+            if (
+                sourceValue ===
+                0
+            ) {
+                continue;
+            }
+
+            const maxJ =
+                Math.min(
+                    shortPolynomial.length - 1,
+                    maxDegree - i
+                );
+
+            for (
+                let j = 0;
+                j <= maxJ;
+                j++
+            ) {
+                result[i + j] +=
+                    sourceValue *
+                    shortPolynomial[j];
+            }
+        }
+
+        return result;
+    }
+
+    /*
+     * Stores:
+     *
+     * E_p(x)^(categoryCount-u)
+     *
+     * for u = 0 ... maxU.
+     *
+     * This lets the pair-probability calculation reuse
+     * the same polynomial work instead of recalculating it.
+     */
+    function buildRestrictedPowerSnapshots(
+        clicks,
+        threshold,
+        categoryCount,
+        probability,
+        maxU
+    ) {
+        const restricted =
+            buildRestrictedCoefficients(
+                threshold,
+                clicks,
+                probability
+            );
+
+        const snapshots =
+            new Array(
+                maxU + 1
+            );
+
+        let power =
+            new Float64Array(
+                [1]
+            );
+
+        for (
+            let exponent = 0;
+            exponent <= categoryCount;
+            exponent++
+        ) {
+            const unrestrictedCount =
+                categoryCount -
+                exponent;
+
+            if (
+                unrestrictedCount >=
+                    0 &&
+                unrestrictedCount <=
+                    maxU
+            ) {
+                snapshots[
+                    unrestrictedCount
+                ] =
+                    power.slice();
+            }
+
+            if (
+                exponent ===
+                categoryCount
+            ) {
+                break;
+            }
+
+            power =
+                multiplyByShortPolynomial(
+                    power,
+                    restricted,
+                    clicks
+                );
+        }
+
+        return snapshots;
+    }
+
+    /*
+     * Calculates:
+     *
+     * n! [x^n] (polynomial) e^(rate*x)
+     *
+     * which directly gives a probability contribution.
+     */
+    function exponentialWeightedProbability(
+        polynomial,
+        rate,
+        clicks,
+        logFactorials
+    ) {
+        let sum = 0;
+
+        let compensation = 0;
+
+        for (
+            let t = 0;
+            t < polynomial.length;
+            t++
+        ) {
+            const coefficient =
+                polynomial[t];
+
+            if (
+                coefficient <=
+                0
+            ) {
+                continue;
+            }
+
+            const remaining =
+                clicks -
+                t;
+
+            if (
+                remaining < 0
+            ) {
+                continue;
+            }
+
+            if (
+                rate ===
+                0
+            ) {
+                if (
+                    remaining !==
+                    0
+                ) {
+                    continue;
+                }
+
+                const logTerm =
+                    Math.log(
+                        coefficient
+                    ) +
+                    logFactorials[
+                        clicks
+                    ];
+
+                const term =
+                    Math.exp(
+                        logTerm
+                    );
+
+                const y =
+                    term -
+                    compensation;
+
+                const next =
+                    sum +
+                    y;
+
+                compensation =
+                    (
+                        next -
+                        sum
+                    ) -
+                    y;
+
+                sum =
+                    next;
+
+                continue;
+            }
+
+            const logTerm =
+                Math.log(
+                    coefficient
+                ) +
+                logFactorials[
+                    clicks
+                ] -
+                logFactorials[
+                    remaining
+                ] +
+                remaining *
+                    Math.log(
+                        rate
+                    );
+
+            const term =
+                Math.exp(
+                    logTerm
+                );
+
+            const y =
+                term -
+                compensation;
+
+            const next =
+                sum +
+                y;
+
+            compensation =
+                (
+                    next -
+                    sum
+                ) -
+                y;
+
+            sum =
+                next;
+        }
+
+        return Math.max(
+            0,
+            Math.min(
+                1,
+                sum
+            )
+        );
+    }
+
+    /*
+     * Probability that at least `pairs` different
+     * categories reach `threshold` appearances when
+     * all `categoryCount` categories are equally likely.
+     */
+    function calculateEqualAtLeastPairs(
+        clicks,
+        threshold,
+        pairs,
+        categoryCount
+    ) {
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks <= 0 ||
+            threshold > clicks ||
+            pairs > categoryCount ||
+            pairs * threshold >
+                clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            categoryCount <=
+            0
+        ) {
+            return 0;
+        }
+
+        const cacheKey =
+            "equal|" +
+            categoryCount +
+            "|" +
+            clicks +
+            "|" +
+            threshold +
+            "|" +
+            pairs;
+
+        if (
+            probabilityCalculationCache.has(
+                cacheKey
+            )
+        ) {
+            return probabilityCalculationCache.get(
+                cacheKey
+            );
+        }
+
+        const maxU =
+            pairs -
+            1;
+
+        const probabilityPerCategory =
+            1 /
+            categoryCount;
+
+        const snapshots =
+            buildRestrictedPowerSnapshots(
+                clicks,
+                threshold,
+                categoryCount,
+                probabilityPerCategory,
+                maxU
+            );
+
+        const logFactorials =
+            getLogFactorials(
+                clicks
+            );
+
+        const unrestrictedProbabilities =
+            new Float64Array(
+                pairs
+            );
+
+        for (
+            let u = 0;
+            u < pairs;
+            u++
+        ) {
+            unrestrictedProbabilities[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    snapshots[u],
+                    u *
+                        probabilityPerCategory,
+                    clicks,
+                    logFactorials
+                );
+        }
+
+        /*
+         * P(r heavy categories)
+         *
+         * Inclusion-exclusion:
+         *
+         * C(m,r) ×
+         * Σ (-1)^(r-u) C(r,u) Q(u)
+         */
+        let complement =
+            0;
+
+        for (
+            let r = 0;
+            r < pairs;
+            r++
+        ) {
+            let inner =
+                0;
+
+            for (
+                let u = 0;
+                u <= r;
+                u++
+            ) {
+                inner +=
+                    (
+                        (
+                            (r - u) %
+                            2 ===
+                            0
+                        )
+                            ? 1
+                            : -1
+                    ) *
+                    combination(
+                        r,
+                        u
+                    ) *
+                    unrestrictedProbabilities[
+                        u
+                    ];
+            }
+
+            complement +=
+                combination(
+                    categoryCount,
+                    r
+                ) *
+                inner;
+        }
+
+        let result =
+            1 -
+            complement;
+
+        if (
+            !Number.isFinite(
+                result
+            )
+        ) {
+            result =
+                0;
+        }
+
+        result =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    result
+                )
+            );
+
+        probabilityCalculationCache.set(
+            cacheKey,
+            result
+        );
+
+        return result;
+    }
+
+    /*
+     * Default mode:
+     *
+     * 365 normal dates each have probability 4/1461.
+     * February 29 has probability 1/1461.
+     *
+     * The calculation uses one separate rare category
+     * instead of pretending all 366 categories are equal.
+     */
+    function calculateRareAtLeastPairs(
+        clicks,
+        threshold,
+        pairs
+    ) {
+        const normalCategories =
+            365;
+
+        const normalProbability =
+            4 /
+            1461;
+
+        const rareProbability =
+            1 /
+            1461;
+
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks <= 0 ||
+            threshold > clicks ||
+            pairs > 366 ||
+            pairs * threshold >
+                clicks
+        ) {
+            return 0;
+        }
+
+        const cacheKey =
+            "rare|" +
+            clicks +
+            "|" +
+            threshold +
+            "|" +
+            pairs;
+
+        if (
+            probabilityCalculationCache.has(
+                cacheKey
+            )
+        ) {
+            return probabilityCalculationCache.get(
+                cacheKey
+            );
+        }
+
+        const maxU =
+            pairs -
+            1;
+
+        const snapshots =
+            buildRestrictedPowerSnapshots(
+                clicks,
+                threshold,
+                normalCategories,
+                normalProbability,
+                maxU
+            );
+
+        const restrictedRare =
+            buildRestrictedCoefficients(
+                threshold,
+                clicks,
+                rareProbability
+            );
+
+        const logFactorials =
+            getLogFactorials(
+                clicks
+            );
+
+        /*
+         * A[u]:
+         *
+         * All normal categories represented by the
+         * inclusion-exclusion term are restricted,
+         * u normal categories are unrestricted,
+         * and February 29 is unrestricted.
+         */
+        const unrestrictedRare =
+            new Float64Array(
+                pairs
+            );
+
+        /*
+         * B[u]:
+         *
+         * Same setup, except February 29 is restricted
+         * to fewer than `threshold` appearances.
+         */
+        const restrictedRareContribution =
+            new Float64Array(
+                pairs
+            );
+
+        for (
+            let u = 0;
+            u < pairs;
+            u++
+        ) {
+            const unrestrictedRate =
+                u *
+                    normalProbability +
+                rareProbability;
+
+            unrestrictedRare[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    snapshots[u],
+                    unrestrictedRate,
+                    clicks,
+                    logFactorials
+                );
+
+            const withRestrictedRare =
+                multiplyByShortPolynomial(
+                    snapshots[u],
+                    restrictedRare,
+                    clicks
+                );
+
+            restrictedRareContribution[
+                u
+            ] =
+                exponentialWeightedProbability(
+                    withRestrictedRare,
+                    u *
+                        normalProbability,
+                    clicks,
+                    logFactorials
+                );
+        }
+
+        /*
+         * The complement is:
+         *
+         * total heavy dates < pairs.
+         *
+         * This includes:
+         *
+         * 1. Rare date is NOT heavy.
+         * 2. Rare date IS heavy, with the normal-date
+         *    heavy count adjusted by one.
+         */
+        let complement =
+            0;
+
+        for (
+            let r = 0;
+            r < pairs;
+            r++
+        ) {
+            let normalNotHeavyInner =
+                0;
+
+            for (
+                let u = 0;
+                u <= r;
+                u++
+            ) {
+                normalNotHeavyInner +=
+                    (
+                        (
+                            (r - u) %
+                            2 ===
+                            0
+                        )
+                            ? 1
+                            : -1
+                    ) *
+                    combination(
+                        r,
+                        u
+                    ) *
+                    unrestrictedRare[
+                        u
+                    ];
+            }
+
+            complement +=
+                combination(
+                    normalCategories,
+                    r
+                ) *
+                normalNotHeavyInner;
+
+            /*
+             * If the rare date itself is heavy,
+             * the normal-date heavy count can be at most
+             * pairs - 2 for the total to remain below pairs.
+             */
+            if (
+                r <=
+                pairs - 2
+            ) {
+                let rareHeavyInner =
+                    0;
+
+                for (
+                    let u = 0;
+                    u <= r;
+                    u++
+                ) {
+                    const rareHeavyTerm =
+                        unrestrictedRare[
+                            u
+                        ] -
+                        restrictedRareContribution[
+                            u
+                        ];
+
+                    rareHeavyInner +=
+                        (
+                            (
+                                (r - u) %
+                                2 ===
+                                0
+                            )
+                                ? 1
+                                : -1
+                        ) *
+                        combination(
+                            r,
+                            u
+                        ) *
+                        rareHeavyTerm;
+                }
+
+                complement +=
+                    combination(
+                        normalCategories,
+                        r
+                    ) *
+                    rareHeavyInner;
+            }
+        }
+
+        let result =
+            1 -
+            complement;
+
+        if (
+            !Number.isFinite(
+                result
+            )
+        ) {
+            result =
+                0;
+        }
+
+        result =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    result
+                )
+            );
+
+        probabilityCalculationCache.set(
+            cacheKey,
+            result
+        );
+
+        return result;
+    }
+
+    function calculateAnyPairProbability(
+        clicks,
+        appearances,
+        pairs
+    ) {
+        const mode =
+            getProbabilityMode();
+
+        if (
+            pairs <= 0
+        ) {
+            return 1;
+        }
+
+        if (
+            clicks < 0 ||
+            appearances < 1 ||
+            pairs < 1
+        ) {
+            return 0;
+        }
+
+        if (
+            appearances >
+            clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            pairs *
+                appearances >
+            clicks
+        ) {
+            return 0;
+        }
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            return calculateEqualAtLeastPairs(
+                clicks,
+                appearances,
+                pairs,
+                365
+            );
+        }
+
+        if (
+            mode ===
+            "equal"
+        ) {
+            return calculateEqualAtLeastPairs(
+                clicks,
+                appearances,
+                pairs,
+                366
+            );
+        }
+
+        return calculateRareAtLeastPairs(
+            clicks,
+            appearances,
+            pairs
+        );
+    }
+
+    function calculateSpecific() {
+        const clicks =
+            Number(
+                document.getElementById(
+                    "specificClicks"
+                ).value
+            );
+
+        const appearances =
+            Number(
+                document.getElementById(
+                    "specificAppearances"
+                ).value
+            );
+
+        if (
+            !Number.isInteger(
+                clicks
+            ) ||
+            !Number.isInteger(
+                appearances
+            ) ||
+            clicks < 0 ||
+            appearances < 0 ||
+            appearances >
+                clicks
+        ) {
+            showResult(
+                "specificResult",
+                "Please enter valid numbers."
+            );
+
+            return;
+        }
+
+        let p;
+
+        const mode =
+            getProbabilityMode();
+
+        if (
+            mode ===
+            "remove"
+        ) {
+            p =
+                1 /
+                365;
+        } else if (
+            mode ===
+            "equal"
+        ) {
+            p =
+                1 /
+                366;
+        } else {
+            const selectedDate =
+                document.getElementById(
+                    "specificDateChoice"
+                ).value;
+
+            if (
+                selectedDate ===
+                "feb29"
+            ) {
+                p =
+                    1 /
+                    1461;
+            } else {
+                p =
+                    4 /
+                    1461;
+            }
+        }
+
+        const probability =
+            combination(
+                clicks,
+                appearances
+            ) *
+            Math.pow(
+                p,
+                appearances
+            ) *
+            Math.pow(
+                1 - p,
+                clicks -
+                    appearances
+            );
+
+        displayProbability(
+            "specificResult",
+            probability,
+            "exactly " +
+                appearances +
+                " time" +
+                (
+                    appearances ===
+                    1
+                        ? ""
+                        : "s"
+                )
+        );
+    }
+
+    function calculateAny() {
+        const clicks =
+            Number(
+                document.getElementById(
+                    "anyClicks"
+                ).value
+            );
+
+        const appearances =
+            Number(
+                document.getElementById(
+                    "anyAppearances"
+                ).value
+            );
+
+        const pairs =
+            Number(
+                document.getElementById(
+                    "anyPairs"
+                ).value
+            );
+
+        if (
+            !Number.isInteger(
+                clicks
+            ) ||
+            !Number.isInteger(
+                appearances
+            ) ||
+            !Number.isInteger(
+                pairs
+            ) ||
+            clicks < 0 ||
+            appearances <
+                1 ||
+            pairs <
+                1
+        ) {
+            showResult(
+                "anyResult",
+                "Please enter valid numbers."
+            );
+
+            return;
+        }
+
+        if (
+            clicks === 0
+        ) {
+            displayProbability(
+                "anyResult",
+                0,
+                buildAnyResultDescription(
+                    appearances,
+                    pairs
+                )
+            );
+
+            return;
+        }
+
+        if (
+            appearances >
+            clicks ||
+            pairs *
+                appearances >
+                clicks
+        ) {
+            displayProbability(
+                "anyResult",
+                0,
+                buildAnyResultDescription(
+                    appearances,
+                    pairs
+                )
+            );
+
+            return;
+        }
+
+        const probability =
+            calculateAnyPairProbability(
+                clicks,
+                appearances,
+                pairs
+            );
+
+        displayProbability(
+            "anyResult",
+            probability,
+            buildAnyResultDescription(
+                appearances,
+                pairs
+            )
+        );
+    }
+
+    function buildAnyResultDescription(
+        appearances,
+        pairs
+    ) {
+        return (
+            "at least " +
+            pairs +
+            " different date" +
+            (
+                pairs === 1
+                    ? ""
+                    : "s"
+            ) +
+            " appearing at least " +
+            appearances +
+            " time" +
+            (
+                appearances === 1
+                    ? ""
+                    : "s"
+            )
+        );
+    }
+
+    function displayProbability(
+        elementId,
+        probability,
+        description
+    ) {
+        const element =
+            document.getElementById(
+                elementId
+            );
+
+        const percentage =
+            probability *
+            100;
+
+        let oneIn = "";
+
+        if (
+            probability > 0 &&
+            probability < 1
+        ) {
+            const value =
+                1 /
+                probability;
+
+            if (
+                value < 1000000000
+            ) {
+                oneIn =
+                    "<br>≈ 1 in " +
+                    formatNumber(
+                        value
+                    );
+            } else {
+                oneIn =
+                    "<br>≈ 1 in " +
+                    value.toExponential(
+                        2
+                    );
+            }
+        }
+
+        element.innerHTML =
+            "<strong>" +
+            formatPercentage(
+                percentage
+            ) +
+            "</strong>" +
+            "<br>" +
+            description +
+            oneIn;
+
+        element.style.display =
+            "block";
+    }
+
+    function showResult(
+        elementId,
+        message
+    ) {
+        const element =
+            document.getElementById(
+                elementId
+            );
+
+        element.innerHTML =
+            "<strong>" +
+            message +
+            "</strong>";
+
+        element.style.display =
+            "block";
+    }
+
+    function formatPercentage(
+        value
+    ) {
+        if (
+            value === 0
+        ) {
+            return "0%";
+        }
+
+        if (
+            value >=
+            99.999999
+        ) {
+            return "≈100%";
+        }
+
+        if (
+            value >= 1
+        ) {
+            return (
+                value.toFixed(
+                    4
+                ) +
+                "%"
+            );
+        }
+
+        if (
+            value >= 0.01
+        ) {
+            return (
+                value.toFixed(
+                    6
+                ) +
+                "%"
+            );
+        }
+
+        if (
+            value >= 0.000001
+        ) {
+            return (
+                value.toFixed(
+                    8
+                ) +
+                "%"
+            );
+        }
+
+        return (
+            value.toExponential(
+                3
+            ) +
+            "%"
+        );
+    }
+
+    function formatNumber(
+        value
+    ) {
+        if (
+            value >= 1000000
+        ) {
+            return value.toExponential(
+                2
+            );
+        }
+
+        return Math.round(
+            value
+        ).toLocaleString();
+    }
+
+    /* HISTORY */
+
+    function sortHistorySaves() {
+        historySaves.sort(
+            (a, b) => {
+                if (
+                    Boolean(
+                        b.pinned
+                    ) !==
+                    Boolean(
+                        a.pinned
+                    )
+                ) {
+                    return b.pinned
+                        ? 1
+                        : -1;
+                }
+
+                return (
+                    (
+                        b.updatedAt ||
+                        b.timestamp
+                    ) -
+                    (
+                        a.updatedAt ||
+                        a.timestamp
+                    )
+                );
+            }
+        );
+    }
+
+    function historyMatchesSearch(
+        save,
+        query
+    ) {
+        if (
+            !query
+        ) {
+            return true;
+        }
+
+        const matchesText =
+            value =>
+                String(
+                    value || ""
+                )
+                    .toLowerCase()
+                    .includes(query);
+
+        return (
+            matchesText(save.name) ||
+            (save.logs || []).some(
+                log => matchesText(log.text)
+            ) ||
+            (save.versions || []).some(
+                version =>
+                    matchesText(version.name) ||
+                    matchesText(version.reason) ||
+                    (version.logs || []).some(
+                        log => matchesText(log.text)
+                    )
+            )
+        );
+    }
+
+    function versionMatchesSearch(
+        version,
+        query
+    ) {
+        if (
+            !query
+        ) {
+            return true;
+        }
+
+        const matchesText =
+            value =>
+                String(
+                    value || ""
+                )
+                    .toLowerCase()
+                    .includes(query);
+
+        return (
+            matchesText(version.name) ||
+            matchesText(version.reason) ||
+            (version.logs || []).some(
+                log => matchesText(log.text)
+            )
+        );
+    }
+
+    function renderHistory() {
+        sortHistorySaves();
+
+        const historyList =
+            document.getElementById(
+                "historyList"
+            );
+
+        const historyCount =
+            document.getElementById(
+                "historyCount"
+            );
+
+        const searchQuery =
+            historySearchQuery
+                .trim()
+                .toLowerCase();
+
+        const visibleSaves =
+            historySaves.filter(
+                save =>
+                    historyMatchesSearch(
+                        save,
+                        searchQuery
+                    )
+            );
+
+        historyCount.textContent =
+            visibleSaves.length +
+            (
+                visibleSaves.length ===
+                1
+                    ? " save"
+                    : " saves"
+            ) +
+            (
+                searchQuery
+                    ? " found"
+                    : ""
+            );
+
+        historyList.innerHTML =
+            "";
+
+        if (
+            visibleSaves.length ===
+            0
+        ) {
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+            empty.className =
+                "emptyHistory";
+
+            empty.innerHTML =
+                '<div class="emptyHistoryTitle">' +
+                (
+                    searchQuery
+                        ? "No matching saves"
+                        : "No saves yet"
+                ) +
+                "</div>" +
+                '<div class="emptyHistoryText">' +
+                (
+                    searchQuery
+                        ? "Try a different search. Save names, old version names, and saved log text are included."
+                        : "Generate some dates, then save the run by resetting, switching saves, or leaving the page."
+                ) +
+                "</div>";
+
+            historyList.appendChild(
+                empty
+            );
+
+            updateSelectionButtons();
+
+            return;
+        }
+
+        const fragment =
+            document.createDocumentFragment();
+
+        visibleSaves.forEach(
+            save => {
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "saveCard";
+
+                const allVersions =
+                    save.versions ||
+                    [];
+
+                const matchingVersions =
+                    searchQuery
+                        ? allVersions.filter(
+                              version =>
+                                  versionMatchesSearch(
+                                      version,
+                                      searchQuery
+                                  )
+                          )
+                        : allVersions;
+
+                const showingVersionMatches =
+                    searchQuery &&
+                    matchingVersions.length >
+                        0;
+
+                const versionsToDisplay =
+                    showingVersionMatches
+                        ? matchingVersions
+                        : allVersions;
+
+                if (
+                    showingVersionMatches
+                ) {
+                    card.classList.add(
+                        "expanded"
+                    );
+                }
+
+                if (
+                    save.pinned
+                ) {
+                    card.classList.add(
+                        "pinned"
+                    );
+                }
+
+                if (
+                    save.id ===
+                    currentSaveId
+                ) {
+                    card.classList.add(
+                        "current"
+                    );
+                }
+
+                const header =
+                    document.createElement(
+                        "div"
+                    );
+
+                header.className =
+                    "saveHeader";
+
+                const checkboxWrap =
+                    document.createElement(
+                        "div"
+                    );
+
+                checkboxWrap.className =
+                    "saveCheckboxWrap";
+
+                const checkbox =
+                    document.createElement(
+                        "input"
+                    );
+
+                checkbox.type =
+                    "checkbox";
+
+                checkbox.className =
+                    "saveCheckbox";
+
+                checkbox.checked =
+                    selectedSaveIds.has(
+                        save.id
+                    );
+
+                checkbox.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+
+                        if (
+                            checkbox.checked
+                        ) {
+                            selectedSaveIds.add(
+                                save.id
+                            );
+                        } else {
+                            selectedSaveIds.delete(
+                                save.id
+                            );
+                        }
+
+                        updateSelectionButtons();
+                    }
+                );
+
+                checkboxWrap.appendChild(
+                    checkbox
+                );
+
+                const main =
+                    document.createElement(
+                        "div"
+                    );
+
+                main.className =
+                    "saveMain";
+
+                const titleRow =
+                    document.createElement(
+                        "div"
+                    );
+
+                titleRow.className =
+                    "saveTitleRow";
+
+                const title =
+                    document.createElement(
+                        "div"
+                    );
+
+                title.className =
+                    "saveTitle";
+
+                title.textContent =
+                    save.name ||
+                    "Unnamed Save";
+
+                titleRow.appendChild(
+                    title
+                );
+
+                if (
+                    save.id ===
+                    currentSaveId
+                ) {
+                    const currentBadge =
+                        document.createElement(
+                            "span"
+                        );
+
+                    currentBadge.className =
+                        "saveBadge";
+
+                    currentBadge.textContent =
+                        "CURRENT";
+
+                    titleRow.appendChild(
+                        currentBadge
+                    );
+                }
+
+                if (
+                    save.pinned
+                ) {
+                    const pinIndicator =
+                        document.createElement(
+                            "span"
+                        );
+
+                    pinIndicator.className =
+                        "pinIndicator";
+
+                    pinIndicator.textContent =
+                        "★";
+
+                    titleRow.appendChild(
+                        pinIndicator
+                    );
+                }
+
+                const meta =
+                    document.createElement(
+                        "div"
+                    );
+
+                meta.className =
+                    "saveMeta";
+
+                const versionCount =
+                    (
+                        save.versions?.length ||
+                        0
+                    );
+
+                meta.textContent =
+                    save.clickCount +
+                    " clicks • updated " +
+                    formatSaveDate(
+                        save.updatedAt ||
+                            save.timestamp
+                    ) +
+                    " • " +
+                    versionCount +
+                    " old " +
+                    (
+                        versionCount ===
+                        1
+                            ? "version"
+                            : "versions"
+                    );
+
+                main.appendChild(
+                    titleRow
+                );
+
+                main.appendChild(
+                    meta
+                );
+
+                const actions =
+                    document.createElement(
+                        "div"
+                    );
+
+                actions.className =
+                    "saveActions";
+
+                const openButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                openButton.className =
+                    "saveIconButton";
+
+                openButton.textContent =
+                    "↗";
+
+                openButton.title =
+                    "Open save";
+
+                openButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+
+                        openSave(
+                            save.id
+                        );
+                    }
+                );
+
+                const renameButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                renameButton.className =
+                    "saveIconButton";
+
+                renameButton.textContent =
+                    "✎";
+
+                renameButton.title =
+                    "Rename save";
+
+                renameButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+
+                        openNameModal(
+                            "renameSave",
+                            save.id
+                        );
+                    }
+                );
+
+                const pinButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                pinButton.className =
+                    "saveIconButton pin";
+
+                if (
+                    save.pinned
+                ) {
+                    pinButton.classList.add(
+                        "active"
+                    );
+                }
+
+                pinButton.textContent =
+                    save.pinned
+                        ? "★"
+                        : "☆";
+
+                pinButton.title =
+                    save.pinned
+                        ? "Unpin save"
+                        : "Pin save";
+
+                pinButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+
+                        save.pinned =
+                            !save.pinned;
+
+                        saveHistory();
+                        renderHistory();
+                    }
+                );
+
+                const expandButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                expandButton.className =
+                    "saveIconButton saveExpandButton";
+
+                expandButton.textContent =
+                    "⌄";
+
+                expandButton.title =
+                    "Show old versions";
+
+                expandButton.addEventListener(
+                    "click",
+                    event => {
+                        event.stopPropagation();
+
+                        card.classList.toggle(
+                            "expanded"
+                        );
+                    }
+                );
+
+                actions.appendChild(
+                    openButton
+                );
+
+                actions.appendChild(
+                    renameButton
+                );
+
+                actions.appendChild(
+                    pinButton
+                );
+
+                actions.appendChild(
+                    expandButton
+                );
+
+                header.appendChild(
+                    checkboxWrap
+                );
+
+                header.appendChild(
+                    main
+                );
+
+                header.appendChild(
+                    actions
+                );
+
+                const details =
+                    document.createElement(
+                        "div"
+                    );
+
+                details.className =
+                    "saveDetails";
+
+                const createdLine =
+                    document.createElement(
+                        "div"
+                    );
+
+                createdLine.className =
+                    "saveDetailLine";
+
+                createdLine.innerHTML =
+                    "<strong>Created:</strong> " +
+                    formatSaveDate(
+                        save.timestamp
+                    );
+
+                details.appendChild(
+                    createdLine
+                );
+
+                const updatedLine =
+                    document.createElement(
+                        "div"
+                    );
+
+                updatedLine.className =
+                    "saveDetailLine";
+
+                updatedLine.innerHTML =
+                    "<strong>Last updated:</strong> " +
+                    formatSaveDate(
+                        save.updatedAt ||
+                            save.timestamp
+                    );
+
+                details.appendChild(
+                    updatedLine
+                );
+
+                const clicksLine =
+                    document.createElement(
+                        "div"
+                    );
+
+                clicksLine.className =
+                    "saveDetailLine";
+
+                clicksLine.innerHTML =
+                    "<strong>Clicks:</strong> " +
+                    save.clickCount;
+
+                details.appendChild(
+                    clicksLine
+                );
+
+                const probabilityLine =
+                    document.createElement(
+                        "div"
+                    );
+
+                probabilityLine.className =
+                    "saveDetailLine";
+
+                probabilityLine.innerHTML =
+                    "<strong>February 29:</strong> " +
+                    (
+                        save.removeFeb29
+                            ? "Removed"
+                            : save.feb29SameChance
+                                ? "Equal chance"
+                                : "4× rarer"
+                    );
+
+                details.appendChild(
+                    probabilityLine
+                );
+
+                const logsLine =
+                    document.createElement(
+                        "div"
+                    );
+
+                logsLine.className =
+                    "saveDetailLine";
+
+                logsLine.innerHTML =
+                    "<strong>Logs:</strong> " +
+                    (
+                        save.logs?.length ||
+                        0
+                    );
+
+                details.appendChild(
+                    logsLine
+                );
+
+                const versions =
+                    allVersions;
+
+                const versionHeading =
+                    document.createElement(
+                        "div"
+                    );
+
+                versionHeading.className =
+                    "versionHeading";
+
+                versionHeading.textContent =
+                    "Old Versions (" +
+                    versionsToDisplay.length +
+                    (
+                        showingVersionMatches
+                            ? " of " +
+                              versions.length
+                            : ""
+                    ) +
+                    ")";
+
+                details.appendChild(
+                    versionHeading
+                );
+
+                const versionList =
+                    document.createElement(
+                        "div"
+                    );
+
+                versionList.className =
+                    "versionList";
+
+                if (
+                    versionsToDisplay.length ===
+                    0
+                ) {
+                    const none =
+                        document.createElement(
+                            "div"
+                        );
+
+                    none.className =
+                        "noVersions";
+
+                    none.textContent =
+                        searchQuery
+                            ? "No matching old versions."
+                            : "No previous versions yet.";
+
+                    versionList.appendChild(
+                        none
+                    );
+                } else {
+                    const versionFragment =
+                        document.createDocumentFragment();
+
+                    versionsToDisplay
+                        .slice()
+                        .reverse()
+                        .forEach(
+                            (
+                                version
+                            ) => {
+                                const versionCard =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionCard.className =
+                                    "versionCard";
+
+                                const versionNumber =
+                                    versions.indexOf(
+                                        version
+                                    ) +
+                                    1;
+
+                                const versionName =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionName.className =
+                                    "versionName";
+
+                                versionName.textContent =
+                                    version.name ||
+                                    "Version " +
+                                        versionNumber;
+
+                                const versionTop =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionTop.className =
+                                    "versionTop";
+
+                                const versionNumberElement =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionNumberElement.className =
+                                    "versionNumber";
+
+                                versionNumberElement.textContent =
+                                    "Version " +
+                                    versionNumber;
+
+                                const versionDate =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionDate.className =
+                                    "versionDate";
+
+                                versionDate.textContent =
+                                    formatSaveDate(
+                                        version.timestamp
+                                    );
+
+                                versionTop.appendChild(
+                                    versionNumberElement
+                                );
+
+                                versionTop.appendChild(
+                                    versionDate
+                                );
+
+                                const versionMeta =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionMeta.className =
+                                    "versionMeta";
+
+                                versionMeta.textContent =
+                                    version.clickCount +
+                                    " clicks" +
+                                    (
+                                        version.currentDate
+                                            ? " • " +
+                                              version.currentDate
+                                            : ""
+                                    ) +
+                                    " • " +
+                                    (
+                                        version.logs?.length ||
+                                        0
+                                    ) +
+                                    " logs";
+
+                                const versionReason =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionReason.className =
+                                    "versionReason";
+
+                                versionReason.textContent =
+                                    version.reason ||
+                                    "Saved version";
+
+                                const versionActions =
+                                    document.createElement(
+                                        "div"
+                                    );
+
+                                versionActions.className =
+                                    "versionActions";
+
+                                const loadVersionButton =
+                                    document.createElement(
+                                        "button"
+                                    );
+
+                                loadVersionButton.className =
+                                    "versionActionButton load";
+
+                                loadVersionButton.textContent =
+                                    "Load";
+
+                                loadVersionButton.title =
+                                    "Load this old version";
+
+                                loadVersionButton.addEventListener(
+                                    "click",
+                                    event => {
+                                        event.stopPropagation();
+
+                                        loadVersion(
+                                            save.id,
+                                            version.id
+                                        );
+                                    }
+                                );
+
+                                const renameVersionButton =
+                                    document.createElement(
+                                        "button"
+                                    );
+
+                                renameVersionButton.className =
+                                    "versionActionButton";
+
+                                renameVersionButton.textContent =
+                                    "✎";
+
+                                renameVersionButton.title =
+                                    "Rename version";
+
+                                renameVersionButton.addEventListener(
+                                    "click",
+                                    event => {
+                                        event.stopPropagation();
+
+                                        openNameModal(
+                                            "renameVersion",
+                                            save.id,
+                                            version.id
+                                        );
+                                    }
+                                );
+
+                                const deleteVersionButton =
+                                    document.createElement(
+                                        "button"
+                                    );
+
+                                deleteVersionButton.className =
+                                    "versionActionButton delete";
+
+                                deleteVersionButton.textContent =
+                                    "×";
+
+                                deleteVersionButton.title =
+                                    "Delete version";
+
+                                deleteVersionButton.addEventListener(
+                                    "click",
+                                    event => {
+                                        event.stopPropagation();
+
+                                        openVersionDeleteWarning(
+                                            save.id,
+                                            version.id
+                                        );
+                                    }
+                                );
+
+                                versionActions.appendChild(
+                                    loadVersionButton
+                                );
+
+                                versionActions.appendChild(
+                                    renameVersionButton
+                                );
+
+                                versionActions.appendChild(
+                                    deleteVersionButton
+                                );
+
+                                versionCard.appendChild(
+                                    versionName
+                                );
+
+                                versionCard.appendChild(
+                                    versionTop
+                                );
+
+                                versionCard.appendChild(
+                                    versionMeta
+                                );
+
+                                versionCard.appendChild(
+                                    versionReason
+                                );
+
+                                versionCard.appendChild(
+                                    versionActions
+                                );
+
+                                versionFragment.appendChild(
+                                    versionCard
+                                );
+                            }
+                        );
+
+                    versionList.appendChild(
+                        versionFragment
+                    );
+                }
+
+                details.appendChild(
+                    versionList
+                );
+
+                card.appendChild(
+                    header
+                );
+
+                card.appendChild(
+                    details
+                );
+
+                fragment.appendChild(
+                    card
+                );
+            }
+        );
+
+        historyList.appendChild(
+            fragment
+        );
+
+        updateSelectionButtons();
+    }
+
+    function updateSelectionButtons() {
+        const deleteModeButton =
+            document.getElementById(
+                "deleteModeButton"
+            );
+
+        const cancelDeleteButton =
+            document.getElementById(
+                "cancelDeleteButton"
+            );
+
+        const deleteSelectedButton =
+            document.getElementById(
+                "deleteSelectedButton"
+            );
+
+        const historyList =
+            document.getElementById(
+                "historyList"
+            );
+
+        historyList.classList.toggle(
+            "selectionMode",
+            selectionMode
+        );
+
+        if (
+            selectionMode
+        ) {
+            deleteModeButton.style.display =
+                "none";
+
+            cancelDeleteButton.style.display =
+                "inline-block";
+
+            deleteSelectedButton.style.display =
+                "inline-block";
+
+            deleteSelectedButton.textContent =
+                selectedSaveIds.size >
+                0
+                    ? "Delete Selected (" +
+                      selectedSaveIds.size +
+                      ")"
+                    : "Delete Selected";
+        } else {
+            deleteModeButton.style.display =
+                "inline-block";
+
+            cancelDeleteButton.style.display =
+                "none";
+
+            deleteSelectedButton.style.display =
+                "none";
+        }
+    }
+
+    function enterSelectionMode() {
+        selectionMode = true;
+        selectedSaveIds.clear();
+        renderHistory();
+    }
+
+    function exitSelectionMode() {
+        selectionMode = false;
+        selectedSaveIds.clear();
+        renderHistory();
+    }
+
+    /* OPEN SAVE */
+
+    function openSave(
+        saveId
+    ) {
+        const targetSave =
+            historySaves.find(
+                save =>
+                    save.id ===
+                    saveId
+            );
+
+        if (
+            !targetSave
+        ) {
+            return;
+        }
+
+        if (
+            clickCount > 0 &&
+            currentSaveId !==
+                saveId
+        ) {
+            ensureCurrentRunSaved(
+                "Switched to another save"
+            );
+        }
+
+        const save =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    saveId
+            );
+
+        if (
+            !save
+        ) {
+            return;
+        }
+
+        clickCount =
+            save.clickCount;
+
+        currentDate =
+            save.currentDate ||
+            "";
+
+        currentSaveId =
+            save.id;
+
+        currentSaveName =
+            save.name ||
+            "Unnamed Save";
+
+        sessionLogs =
+            cloneObject(
+                save.logs ||
+                    []
+            );
+
+        for (
+            const date in dateCounts
+        ) {
+            delete dateCounts[
+                date
+            ];
+        }
+
+        for (
+            const date in dateHistory
+        ) {
+            delete dateHistory[
+                date
+            ];
+        }
+
+        Object.assign(
+            dateCounts,
+            cloneObject(
+                save.dateCounts
+            )
+        );
+
+        Object.assign(
+            dateHistory,
+            cloneObject(
+                save.dateHistory
+            )
+        );
+
+        feb29SameChance =
+            Boolean(
+                save.feb29SameChance
+            );
+
+        removeFeb29 =
+            Boolean(
+                save.removeFeb29
+            );
+
+        if (
+            removeFeb29
+        ) {
+            feb29SameChance =
+                false;
+        }
+
+        rebuildLeaderCache();
+
+        document.getElementById(
+            "counter"
+        ).textContent =
+            clickCount;
+
+        document.getElementById(
+            "date"
+        ).textContent =
+            currentDate ||
+            "Click the button!";
+
+        document.getElementById(
+            "equalFeb29"
+        ).checked =
+            feb29SameChance;
+
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
+
+        updateProbabilityModeText();
+        updateDuplicates();
+
+        if (
+            isLogsTabActive()
+        ) {
+            renderLogs();
+        }
+
+        renderHistory();
+
+        closeProbability();
+    }
+
+    /*
+     * LOAD OLD VERSION
+     */
+    function loadVersion(
+        saveId,
+        versionId
+    ) {
+        const save =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    saveId
+            );
+
+        if (
+            !save
+        ) {
+            return;
+        }
+
+        const version =
+            (
+                save.versions ||
+                []
+            ).find(
+                item =>
+                    item.id ===
+                    versionId
+            );
+
+        if (
+            !version
+        ) {
+            return;
+        }
+
+        if (
+            clickCount > 0 &&
+            currentSaveId !==
+                saveId
+        ) {
+            ensureCurrentRunSaved(
+                "Switched before loading an old version"
+            );
+        }
+
+        const refreshedSave =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    saveId
+            );
+
+        if (
+            !refreshedSave
+        ) {
+            return;
+        }
+
+        const currentMainState =
+            getSaveVersionState(
+                refreshedSave
+            );
+
+        const currentMainSignature =
+            getComparableSignature(
+                currentMainState
+            );
+
+        const loadedVersionSignature =
+            getVersionSignature(
+                version
+            );
+
+        if (
+            currentMainSignature !==
+            loadedVersionSignature
+        ) {
+            archiveSaveVersion(
+                refreshedSave,
+                "Before loading an old version"
+            );
+        }
+
+        clickCount =
+            version.clickCount;
+
+        currentDate =
+            version.currentDate ||
+            "";
+
+        currentSaveId =
+            refreshedSave.id;
+
+        currentSaveName =
+            refreshedSave.name ||
+            "Unnamed Save";
+
+        sessionLogs =
+            cloneObject(
+                version.logs ||
+                    []
+            );
+
+        for (
+            const date in dateCounts
+        ) {
+            delete dateCounts[
+                date
+            ];
+        }
+
+        for (
+            const date in dateHistory
+        ) {
+            delete dateHistory[
+                date
+            ];
+        }
+
+        Object.assign(
+            dateCounts,
+            cloneObject(
+                version.dateCounts ||
+                    {}
+            )
+        );
+
+        Object.assign(
+            dateHistory,
+            cloneObject(
+                version.dateHistory ||
+                    {}
+            )
+        );
+
+        feb29SameChance =
+            Boolean(
+                version.feb29SameChance
+            );
+
+        removeFeb29 =
+            Boolean(
+                version.removeFeb29
+            );
+
+        if (
+            removeFeb29
+        ) {
+            feb29SameChance =
+                false;
+        }
+
+        refreshedSave.clickCount =
+            version.clickCount;
+
+        refreshedSave.currentDate =
+            version.currentDate ||
+            "";
+
+        refreshedSave.dateCounts =
+            cloneObject(
+                version.dateCounts ||
+                    {}
+            );
+
+        refreshedSave.dateHistory =
+            cloneObject(
+                version.dateHistory ||
+                    {}
+            );
+
+        refreshedSave.feb29SameChance =
+            Boolean(
+                version.feb29SameChance
+            );
+
+        refreshedSave.removeFeb29 =
+            Boolean(
+                version.removeFeb29
+            );
+
+        refreshedSave.logs =
+            cloneObject(
+                version.logs ||
+                    []
+            );
+
+        refreshedSave.updatedAt =
+            Date.now();
+
+        rebuildLeaderCache();
+
+        saveHistory();
+
+        document.getElementById(
+            "counter"
+        ).textContent =
+            clickCount;
+
+        document.getElementById(
+            "date"
+        ).textContent =
+            currentDate ||
+            "Click the button!";
+
+        document.getElementById(
+            "equalFeb29"
+        ).checked =
+            feb29SameChance;
+
+        document.getElementById(
+            "removeFeb29"
+        ).checked =
+            removeFeb29;
+
+        updateProbabilityModeText();
+        updateDuplicates();
+
+        if (
+            isLogsTabActive()
+        ) {
+            renderLogs();
+        }
+
+        renderHistory();
+    }
+
+    /* LOGS */
+
+    function getLogType(
+        log
+    ) {
+        const text =
+            String(
+                log.text || ""
+            );
+
+        if (
+            text.startsWith(
+                "Simulated "
+            )
+        ) {
+            return "simulation";
+        }
+
+        if (
+            text.startsWith(
+                "Click "
+            )
+        ) {
+            return "click";
+        }
+
+        if (
+            text.includes(
+                "top 1"
+            ) ||
+            text.includes(
+                " has passed "
+            )
+        ) {
+            return "milestone";
+        }
+
+        return "setting";
+    }
+
+    function logMatchesFilters(
+        log
+    ) {
+        const matchesSearch =
+            String(
+                log.text || ""
+            )
+                .toLowerCase()
+                .includes(
+                    logSearchQuery
+                        .trim()
+                        .toLowerCase()
+                );
+
+        if (
+            !matchesSearch
+        ) {
+            return false;
+        }
+
+        if (
+            logFilter ===
+            "all"
+        ) {
+            return true;
+        }
+
+        if (
+            logFilter ===
+            "pinned"
+        ) {
+            return Boolean(
+                log.pinned
+            );
+        }
+
+        return (
+            getLogType(log) ===
+            logFilter
+        );
+    }
+
+    function toggleLogPin(
+        logId
+    ) {
+        const log =
+            sessionLogs.find(
+                item =>
+                    item.id === logId
+            );
+
+        if (
+            !log
+        ) {
+            return;
+        }
+
+        log.pinned =
+            !log.pinned;
+
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const logsList =
+            document.getElementById(
+                "logsList"
+            );
+
+        const logsSaveName =
+            document.getElementById(
+                "logsSaveName"
+            );
+
+        const logsSaveMeta =
+            document.getElementById(
+                "logsSaveMeta"
+            );
+
+        logsSaveName.textContent =
+            currentSaveName;
+
+        const visibleLogs =
+            sessionLogs
+                .map(
+                    (log, index) => ({
+                        log,
+                        index
+                    })
+                )
+                .filter(
+                    entry =>
+                        logMatchesFilters(
+                            entry.log
+                        )
+                );
+
+        logsSaveMeta.textContent =
+            visibleLogs.length +
+            (
+                visibleLogs.length ===
+                1
+                    ? " log entry"
+                    : " log entries"
+            ) +
+            (
+                visibleLogs.length !==
+                sessionLogs.length
+                    ? " shown of " +
+                      sessionLogs.length
+                    : ""
+            ) +
+            " • " +
+            clickCount +
+            " clicks";
+
+        logsList.innerHTML =
+            "";
+
+        if (
+            visibleLogs.length ===
+            0
+        ) {
+            const empty =
+                document.createElement(
+                    "div"
+                );
+
+            empty.className =
+                "emptyLogs";
+
+            empty.textContent =
+                sessionLogs.length === 0
+                    ? "Nothing has happened yet in this run."
+                    : "No logs match this search or filter.";
+
+            logsList.appendChild(
+                empty
+            );
+
+            return;
+        }
+
+        const fragment =
+            document.createDocumentFragment();
+
+        for (
+            let i =
+                visibleLogs.length -
+                1;
+            i >= 0;
+            i--
+        ) {
+            const entry =
+                visibleLogs[i];
+
+            const log = entry.log;
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "logItem";
+
+            const number =
+                document.createElement(
+                    "div"
+                );
+
+            number.className =
+                "logNumber";
+
+            number.textContent =
+                "#" +
+                (
+                    entry.index +
+                    1
+                );
+
+            const text =
+                document.createElement(
+                    "div"
+                );
+
+            text.className =
+                "logText";
+
+            text.textContent =
+                log.text;
+
+            const time =
+                document.createElement(
+                    "div"
+                );
+
+            time.className =
+                "logTime";
+
+            time.textContent =
+                formatLogTime(
+                    log.timestamp
+                );
+
+            const pinButton =
+                document.createElement(
+                    "button"
+                );
+
+            pinButton.className =
+                "logPinButton";
+
+            if (
+                log.pinned
+            ) {
+                pinButton.classList.add(
+                    "pinned"
+                );
+            }
+
+            pinButton.type =
+                "button";
+
+            pinButton.textContent =
+                log.pinned
+                    ? "★"
+                    : "☆";
+
+            pinButton.title =
+                log.pinned
+                    ? "Unpin log"
+                    : "Pin log";
+
+            pinButton.setAttribute(
+                "aria-label",
+                pinButton.title
+            );
+
+            pinButton.addEventListener(
+                "click",
+                () =>
+                    toggleLogPin(
+                        log.id
+                    )
+            );
+
+            item.appendChild(
+                number
+            );
+
+            item.appendChild(
+                text
+            );
+
+            item.appendChild(
+                time
+            );
+
+            item.appendChild(
+                pinButton
+            );
+
+            fragment.appendChild(
+                item
+            );
+        }
+
+        logsList.appendChild(
+            fragment
+        );
+    }
+
+    /* NAME MODALS */
+
+    function openNameModal(
+        mode,
+        saveId = null,
+        versionId = null
+    ) {
+        nameModalMode =
+            mode;
+
+        nameModalSaveId =
+            saveId;
+
+        nameModalVersionId =
+            versionId;
+
+        const title =
+            document.getElementById(
+                "nameModalTitle"
+            );
+
+        const description =
+            document.getElementById(
+                "nameModalDescription"
+            );
+
+        const input =
+            document.getElementById(
+                "saveNameInput"
+            );
+
+        const noSaveButton =
+            document.getElementById(
+                "nameNoSave"
+            );
+
+        const confirmButton =
+            document.getElementById(
+                "nameConfirm"
+            );
+
+        if (
+            mode ===
+            "renameSave"
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            title.textContent =
+                "Rename save";
+
+            description.textContent =
+                "Change the name of this saved run.";
+
+            input.value =
+                save?.name ||
+                "";
+
+            input.placeholder =
+                "Save name";
+
+            noSaveButton.style.display =
+                "none";
+
+            confirmButton.textContent =
+                "Save Name";
+        } else if (
+            mode ===
+            "renameVersion"
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        saveId
+                );
+
+            const version =
+                save?.versions?.find(
+                    item =>
+                        item.id ===
+                        versionId
+                );
+
+            title.textContent =
+                "Rename old version";
+
+            description.textContent =
+                "Give this old version its own name.";
+
+            input.value =
+                version?.name ||
+                "";
+
+            input.placeholder =
+                "Version name";
+
+            noSaveButton.style.display =
+                "none";
+
+            confirmButton.textContent =
+                "Save Name";
+        } else {
+            title.textContent =
+                "Name your save";
+
+            description.textContent =
+                "Give this run a name so it is easy to find later.";
+
+            input.value =
+                "";
+
+            input.placeholder =
+                "Example: My 3,000 Click Run";
+
+            noSaveButton.style.display =
+                "inline-block";
+
+            confirmButton.textContent =
+                "Save & Reset";
+        }
+
+        document.getElementById(
+            "namePanel"
+        ).classList.add(
+            "open"
+        );
+
+        setTimeout(
+            () => {
+                input.focus();
+            },
+            50
+        );
+    }
+
+    function closeNameModal() {
+        nameModalMode =
+            null;
+
+        nameModalSaveId =
+            null;
+
+        nameModalVersionId =
+            null;
+
+        document.getElementById(
+            "namePanel"
+        ).classList.remove(
+            "open"
+        );
+    }
+
+    function confirmNameModal() {
+        const input =
+            document.getElementById(
+                "saveNameInput"
+            );
+
+        const enteredName =
+            input.value.trim();
+
+        if (
+            nameModalMode ===
+            "renameSave"
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        nameModalSaveId
+                );
+
+            if (
+                save
+            ) {
+                save.name =
+                    enteredName ||
+                    getDefaultSaveName();
+
+                saveHistory();
+                renderHistory();
+
+                if (
+                    currentSaveId ===
+                    save.id
+                ) {
+                    currentSaveName =
+                        save.name;
+
+                    if (
+                        isLogsTabActive()
+                    ) {
+                        renderLogs();
+                    }
+                }
+            }
+
+            closeNameModal();
+
+            return;
+        }
+
+        if (
+            nameModalMode ===
+            "renameVersion"
+        ) {
+            const save =
+                historySaves.find(
+                    item =>
+                        item.id ===
+                        nameModalSaveId
+                );
+
+            const version =
+                save?.versions?.find(
+                    item =>
+                        item.id ===
+                        nameModalVersionId
+                );
+
+            if (
+                version
+            ) {
+                version.name =
+                    enteredName ||
+                    getDefaultVersionName(
+                        (
+                            save.versions
+                                .indexOf(
+                                    version
+                                ) +
+                            1
+                        ),
+                        version.timestamp
+                    );
+
+                saveHistory();
+                renderHistory();
+            }
+
+            closeNameModal();
+
+            return;
+        }
+
+        const name =
+            enteredName ||
+            getDefaultSaveName();
+
+        createSaveFromCurrentRun(
+            name
+        );
+
+        closeNameModal();
+
+        clearCurrentRun();
+    }
+
+    function resetWithoutSaving() {
+        clearCurrentRun();
+    }
+
+    function handleReset() {
+        if (
+            !autoSaveOnReset ||
+            clickCount <= 0
+        ) {
+            resetWithoutSaving();
+            return;
+        }
+
+        if (
+            isCurrentRunDuplicate()
+        ) {
+            resetWithoutSaving();
+            return;
+        }
+
+        if (
+            customNamesOn
+        ) {
+            openNameModal(
+                "new"
+            );
+
+            return;
+        }
+
+        ensureCurrentRunSaved(
+            "Reset"
+        );
+
+        clearCurrentRun();
+    }
+
+    function isCurrentRunDuplicate() {
+        if (
+            clickCount <= 0
+        ) {
+            return false;
+        }
+
+        const signature =
+            getCurrentSignature();
+
+        return Boolean(
+            findDuplicateSave(
+                signature,
+                currentSaveId
+            )
+        ) ||
+            (
+                currentSaveId &&
+                historySaves.some(
+                    save =>
+                        save.id ===
+                            currentSaveId &&
+                        getSaveSignature(
+                            save
+                        ) ===
+                            signature
+                )
+            );
+    }
+
+    /* SAVE BEFORE LEAVING */
+
+    function persistBeforeLeaving() {
+        if (
+            clickCount <= 0
+        ) {
+            return;
+        }
+
+        ensureCurrentRunSaved(
+            "Page left or refreshed"
+        );
+    }
+
+    window.addEventListener(
+        "pagehide",
+        persistBeforeLeaving
+    );
+
+    window.addEventListener(
+        "beforeunload",
+        persistBeforeLeaving
+    );
+
+    /* DELETE */
+
+    function openDeleteWarning() {
+        if (
+            selectedSaveIds.size ===
+            0
+        ) {
+            return;
+        }
+
+        pendingDeleteType =
+            "save";
+
+        pendingDeleteSaveId =
+            null;
+
+        pendingDeleteVersionId =
+            null;
+
+        const count =
+            selectedSaveIds.size;
+
+        document.getElementById(
+            "warningTitle"
+        ).textContent =
+            "Delete saves?";
+
+        document.getElementById(
+            "warningText"
+        ).textContent =
+            "You are about to permanently delete " +
+            count +
+            (
+                count === 1
+                    ? " save."
+                    : " saves."
+            ) +
+            " This cannot be undone.";
+
+        document.getElementById(
+            "warningPanel"
+        ).classList.add(
+            "open"
+        );
+    }
+
+    function openVersionDeleteWarning(
+        saveId,
+        versionId
+    ) {
+        const save =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    saveId
+            );
+
+        const version =
+            save?.versions?.find(
+                item =>
+                    item.id ===
+                    versionId
+            );
+
+        if (
+            !save ||
+            !version
+        ) {
+            return;
+        }
+
+        pendingDeleteType =
+            "version";
+
+        pendingDeleteSaveId =
+            saveId;
+
+        pendingDeleteVersionId =
+            versionId;
+
+        document.getElementById(
+            "warningTitle"
+        ).textContent =
+            "Delete old version?";
+
+        document.getElementById(
+            "warningText"
+        ).textContent =
+            "Delete \"" +
+            (
+                version.name ||
+                "this old version"
+            ) +
+            "\" permanently? This cannot be undone.";
+
+        document.getElementById(
+            "warningPanel"
+        ).classList.add(
+            "open"
+        );
+    }
+
+    function closeDeleteWarning() {
+        pendingDeleteType =
+            null;
+
+        pendingDeleteSaveId =
+            null;
+
+        pendingDeleteVersionId =
+            null;
+
+        document.getElementById(
+            "warningPanel"
+        ).classList.remove(
+            "open"
+        );
+    }
+
+    function deleteSelectedSaves() {
+        const deletingCurrent =
+            selectedSaveIds.has(
+                currentSaveId
+            );
+
+        historySaves =
+            historySaves.filter(
+                save =>
+                    !selectedSaveIds.has(
+                        save.id
+                    )
+            );
+
+        if (
+            deletingCurrent
+        ) {
+            currentSaveId = null;
+            currentSaveName =
+                "Current Session";
+        }
+
+        saveHistory();
+
+        closeDeleteWarning();
+
+        selectionMode =
+            false;
+
+        selectedSaveIds.clear();
+
+        renderHistory();
+
+        if (
+            isLogsTabActive()
+        ) {
+            renderLogs();
+        }
+    }
+
+    function deleteVersion() {
+        const save =
+            historySaves.find(
+                item =>
+                    item.id ===
+                    pendingDeleteSaveId
+            );
+
+        if (
+            !save ||
+            !Array.isArray(
+                save.versions
+            )
+        ) {
+            closeDeleteWarning();
+            return;
+        }
+
+        const index =
+            save.versions.findIndex(
+                version =>
+                    version.id ===
+                    pendingDeleteVersionId
+            );
+
+        if (
+            index ===
+            -1
+        ) {
+            closeDeleteWarning();
+            return;
+        }
+
+        save.versions.splice(
+            index,
+            1
+        );
+
+        saveHistory();
+
+        closeDeleteWarning();
+
+        renderHistory();
+    }
+
+    function confirmDelete() {
+        if (
+            pendingDeleteType ===
+            "version"
+        ) {
+            deleteVersion();
+            return;
+        }
+
+        if (
+            pendingDeleteType ===
+            "save"
+        ) {
+            deleteSelectedSaves();
+            return;
+        }
+
+        closeDeleteWarning();
+    }
+
+    /* EVENTS */
+
+    document.getElementById(
+        "infoButton"
+    ).addEventListener(
+        "click",
+        openProbability
+    );
+
+    document.getElementById(
+        "closeProbability"
+    ).addEventListener(
+        "click",
+        closeProbability
+    );
+
+    document.getElementById(
+        "generateButton"
+    ).addEventListener(
+        "click",
+        generateDate
+    );
+
+    document.getElementById(
+        "simulateButton"
+    ).addEventListener(
+        "click",
+        openSimulationModal
+    );
+
+    document.getElementById(
+        "simulationCancel"
+    ).addEventListener(
+        "click",
+        closeSimulationModal
+    );
+
+    document.getElementById(
+        "simulationConfirm"
+    ).addEventListener(
+        "click",
+        simulateClicks
+    );
+
+    document.getElementById(
+        "simulationCountInput"
+    ).addEventListener(
+        "input",
+        function() {
+            this.setCustomValidity("");
+        }
+    );
+
+    document.getElementById(
+        "simulationCountInput"
+    ).addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key ===
+                "Enter"
+            ) {
+                simulateClicks();
+            }
+
+            if (
+                event.key ===
+                "Escape"
+            ) {
+                closeSimulationModal();
+            }
+        }
+    );
+
+    document.getElementById(
+        "resetButton"
+    ).addEventListener(
+        "click",
+        handleReset
+    );
+
+    document.getElementById(
+        "sortButton"
+    ).addEventListener(
+        "click",
+        toggleSort
+    );
+
+    document.getElementById(
+        "specificCalculate"
+    ).addEventListener(
+        "click",
+        calculateSpecific
+    );
+
+    document.getElementById(
+        "anyCalculate"
+    ).addEventListener(
+        "click",
+        calculateAny
+    );
+
+    document.getElementById(
+        "equalFeb29"
+    ).addEventListener(
+        "change",
+        function() {
+            if (
+                this.checked
+            ) {
+                setProbabilityMode(
+                    "equal"
+                );
+            } else if (
+                !document.getElementById(
+                    "removeFeb29"
+                ).checked
+            ) {
+                setProbabilityMode(
+                    "rare"
+                );
+            }
+        }
+    );
+
+    document.getElementById(
+        "removeFeb29"
+    ).addEventListener(
+        "change",
+        function() {
+            if (
+                this.checked
+            ) {
+                setProbabilityMode(
+                    "remove"
+                );
+            } else if (
+                !document.getElementById(
+                    "equalFeb29"
+                ).checked
+            ) {
+                setProbabilityMode(
+                    "rare"
+                );
+            }
+        }
+    );
+
+    document.getElementById(
+        "deleteModeButton"
+    ).addEventListener(
+        "click",
+        enterSelectionMode
+    );
+
+    document.getElementById(
+        "cancelDeleteButton"
+    ).addEventListener(
+        "click",
+        exitSelectionMode
+    );
+
+    document.getElementById(
+        "deleteSelectedButton"
+    ).addEventListener(
+        "click",
+        openDeleteWarning
+    );
+
+    document.getElementById(
+        "warningCancel"
+    ).addEventListener(
+        "click",
+        closeDeleteWarning
+    );
+
+    document.getElementById(
+        "warningConfirm"
+    ).addEventListener(
+        "click",
+        confirmDelete
+    );
+
+    document.getElementById(
+        "autoSaveToggle"
+    ).addEventListener(
+        "change",
+        function() {
+            autoSaveOnReset =
+                this.checked;
+
+            saveSettings();
+        }
+    );
+
+    document.getElementById(
+        "customNamesToggle"
+    ).addEventListener(
+        "change",
+        function() {
+            customNamesOn =
+                this.checked;
+
+            saveSettings();
+        }
+    );
+
+    document.getElementById(
+        "historySearch"
+    ).addEventListener(
+        "input",
+        function() {
+            historySearchQuery =
+                this.value;
+
+            renderHistory();
+        }
+    );
+
+    document.getElementById(
+        "logSearch"
+    ).addEventListener(
+        "input",
+        function() {
+            logSearchQuery =
+                this.value;
+
+            renderLogs();
+        }
+    );
+
+    document.getElementById(
+        "logFilter"
+    ).addEventListener(
+        "change",
+        function() {
+            logFilter =
+                this.value;
+
+            renderLogs();
+        }
+    );
+
+    document.getElementById(
+        "nameCancel"
+    ).addEventListener(
+        "click",
+        closeNameModal
+    );
+
+    document.getElementById(
+        "nameNoSave"
+    ).addEventListener(
+        "click",
+        function() {
+            closeNameModal();
+            resetWithoutSaving();
+        }
+    );
+
+    document.getElementById(
+        "nameConfirm"
+    ).addEventListener(
+        "click",
+        confirmNameModal
+    );
+
+    document
+        .querySelectorAll(
+            ".tabButton"
+        )
+        .forEach(
+            button => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        switchTab(
+                            button.dataset
+                                .tab
+                        );
+                    }
+                );
+            }
+        );
+
+    document.getElementById(
+        "saveNameInput"
+    ).addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key ===
+                "Enter"
+            ) {
+                confirmNameModal();
+            }
+
+            if (
+                event.key ===
+                "Escape"
+            ) {
+                closeNameModal();
+            }
+        }
+    );
+
+    document.getElementById(
+        "probabilityPanel"
+    ).addEventListener(
+        "click",
+        function(event) {
+            if (
+                event.target === this
+            ) {
+                closeProbability();
+            }
+        }
+    );
+
+    document.getElementById(
+        "namePanel"
+    ).addEventListener(
+        "click",
+        function(event) {
+            if (
+                event.target === this
+            ) {
+                closeNameModal();
+            }
+        }
+    );
+
+    document.getElementById(
+        "simulationPanel"
+    ).addEventListener(
+        "click",
+        function(event) {
+            if (
+                event.target === this
+            ) {
+                closeSimulationModal();
+            }
+        }
+    );
+
+    document.getElementById(
+        "warningPanel"
+    ).addEventListener(
+        "click",
+        function(event) {
+            if (
+                event.target === this
+            ) {
+                closeDeleteWarning();
+            }
+        }
+    );
+
+    /* STARTUP */
+
+    buildDatePools();
+
+    loadHistory();
+    loadSettings();
+
+    /*
+     * Old saves may not have the new mode property.
+     * Defaulting to false preserves their old behavior.
+     */
+    feb29SameChance =
+        Boolean(
+            feb29SameChance
+        );
+
+    removeFeb29 =
+        Boolean(
+            removeFeb29
+        );
+
+    document.getElementById(
+        "equalFeb29"
+    ).checked =
+        feb29SameChance;
+
+    document.getElementById(
+        "removeFeb29"
+    ).checked =
+        removeFeb29;
+
+    updateProbabilityModeText();
+
+    rebuildLeaderCache();
+
+    updateDuplicates();
+    renderHistory();
+
+    if (
+        isLogsTabActive()
+    ) {
+        renderLogs();
+    }
+</script>
+
+</body>
+</html>
